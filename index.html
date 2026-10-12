@@ -20,16 +20,15 @@ body, html {
 }
 canvas { display: block; width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1; }
 
-/* تصميم الشاشات التفاعلية العصرية */
+/* الشاشات التفاعلية فوق اللعبة */
 .screen-overlay {
-  position: absolute; inset: 0; z-index: 100;
-  background: rgba(13, 1, 24, 0.92);
+  position: absolute; inset: 0; z-index: 9999;
+  background: rgba(13, 1, 24, 0.94);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 24px; text-align: center; padding: 25px;
-  animation: fadeIn 0.3s ease;
+  pointer-events: auto !important;
 }
-@keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
 
 .screen-overlay h1 {
   font-size: 38px; font-weight: 900; color: #ffeaa7;
@@ -46,32 +45,31 @@ canvas { display: block; width: 100%; height: 100%; position: absolute; inset: 0
   border: 3px solid #fff; border-radius: 50px;
   color: #fff; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 24px;
   padding: 14px 48px; cursor: pointer;
-  box-shadow: 0 10px 25px rgba(214, 48, 49, 0.5), inset 0 2px 0 rgba(255,255,255,0.4);
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 25px rgba(214, 48, 49, 0.5);
+  transition: transform 0.1s;
+  pointer-events: auto !important;
+  position: relative; z-index: 10000;
 }
-.btn-glow:hover { transform: scale(1.06) translateY(-2px); box-shadow: 0 15px 30px rgba(214, 48, 49, 0.7); }
-.btn-glow:active { transform: scale(0.96) translateY(2px); }
+.btn-glow:active { transform: scale(0.95); }
 
 .btn-green {
   background: linear-gradient(135deg, #00b894, #006b54);
   box-shadow: 0 10px 25px rgba(0, 184, 148, 0.5);
 }
 
-/* الحاوية البصرية لشخصيات التحذير */
 .chars-preview {
-  display: flex; gap: 30px; margin: 10px 0; align-items: center; justify-content: center;
+  display: flex; gap: 25px; margin: 10px 0; align-items: center; justify-content: center;
 }
 .char-card {
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 24px; padding: 15px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
-.char-card canvas { position: relative; width: 120px; height: 130px; }
+.char-card canvas { position: relative; width: 120px; height: 130px; z-index: 2; }
 
-/* واجهة الأزرار العلوية أثناء اللعب */
+/* أزرار الواجهة أثناء اللعب */
 .game-ui {
-  position: absolute; top: 20px; left: 20px; right: 20px; z-index: 50;
+  position: absolute; top: 20px; left: 20px; right: 20px; z-index: 500;
   display: flex; justify-content: space-between; align-items: center;
   pointer-events: none;
 }
@@ -81,12 +79,11 @@ canvas { display: block; width: 100%; height: 100%; position: absolute; inset: 0
 }
 .ui-btns { display: flex; gap: 12px; pointer-events: auto; }
 .icon-btn {
-  background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(5px);
-  border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 14px;
+  background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
+  border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 14px;
   color: #fff; font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 16px;
-  padding: 8px 18px; cursor: pointer; transition: 0.2s;
+  padding: 8px 18px; cursor: pointer;
 }
-.icon-btn:hover { background: rgba(255,255,255,0.3); }
 </style>
 </head>
 <body>
@@ -95,23 +92,23 @@ canvas { display: block; width: 100%; height: 100%; position: absolute; inset: 0
   <!-- الكانفاس الرئيسي -->
   <canvas id="gameCanvas"></canvas>
 
-  <!-- أزرار الواجهة العليا أثناء اللعب -->
+  <!-- أزرار الواجهة العليا -->
   <div class="game-ui">
     <div class="brand-title">رحلة علم الأجنة 🧬</div>
     <div class="ui-btns">
-      <button class="icon-btn" id="pauseBtn">إيقاف ⏸</button>
-      <button class="icon-btn" id="muteBtn">الصوت: مفعل 🔊</button>
+      <button class="icon-btn" onclick="togglePause(event)">إيقاف ⏸</button>
+      <button class="icon-btn" onclick="toggleMute(event)">الصوت: مفعل 🔊</button>
     </div>
   </div>
 
   <!-- الشاشة 1: ابدأ رحلتك بعلم الأجنة -->
   <div id="screenStart" class="screen-overlay">
     <h1>ابدأ رحلتك بعلم الأجنة</h1>
-    <p>انغمس داخل العالم المجهري المدهش للخلايا الأجسنية وشاهد المعجزات الخلوية عن قرب!</p>
-    <button class="btn-glow" id="btnStart">ابدأ الرحلة 🚀</button>
+    <p>انغمس داخل العالم المجهري المدهش للخلايا الأجنة وشاهد المعجزات الخلوية عن قرب!</p>
+    <button class="btn-glow" onclick="handleStartClick(event)">ابدأ الرحلة 🚀</button>
   </div>
 
-  <!-- الشاشة 2: شاشة التحذير للشخصيات الكرتونية النفاثة بالقبعات البيضاء -->
+  <!-- الشاشة 2: شاشة التحذير -->
   <div id="screenWarning" class="screen-overlay" style="display: none;">
     <h1>تحذير من الفريق الطبي! ⚠️</h1>
     <div class="chars-preview">
@@ -119,14 +116,14 @@ canvas { display: block; width: 100%; height: 100%; position: absolute; inset: 0
       <div class="char-card"><canvas id="previewGirl" width="120" height="130"></canvas></div>
     </div>
     <p>انتبه أيها الباحث! المسار مليء بالفيروسات والأجسام الخلوية الدخيلة.<br>حافظ على طاقة الـ ATP واففز لتفادي المخاطر!</p>
-    <button class="btn-glow btn-green" id="btnGoPlay">انطلق الآن! 🧬</button>
+    <button class="btn-glow btn-green" onclick="handlePlayClick(event)">انطلق الآن! 🧬</button>
   </div>
 
   <!-- الشاشة 3: نهاية المحاولة -->
   <div id="screenGameOver" class="screen-overlay" style="display: none;">
     <h1>انتهت المحاولة!</h1>
     <p id="scoreText" style="font-size: 26px; color: #ffeaa7; font-weight: 900;"></p>
-    <button class="btn-glow" id="btnRestart">إعادة اللعب 🔄</button>
+    <button class="btn-glow" onclick="handleRestartClick(event)">إعادة اللعب 🔄</button>
   </div>
 </div>
 
@@ -160,12 +157,10 @@ function playSound(freq, duration, type = 'sine') {
   } catch(e){}
 }
 
-// حالات اللعبة
 let gameState = 'START'; // START, WARNING, PLAYING, GAMEOVER
 let score = 0, lives = 3, frame = 0, isPaused = false;
 const getGroundY = () => H * 0.76;
 
-// لاعب اللعبة (الشخصية الكرتونية بالنفاث)
 const player = {
   x: 120, y: 0, w: 60, h: 75,
   vy: 0, gravity: 0.6, jumpPower: -13.5,
@@ -176,8 +171,7 @@ let obstacles = [];
 let collectibles = [];
 let bgParticles = [];
 
-// توليد الجزيئات العائمة في الخلفية
-for (let i = 0; i < 35; i++) {
+for (let i = 0; i < 30; i++) {
   bgParticles.push({
     x: Math.random() * W, y: Math.random() * H,
     r: Math.random() * 4 + 2, speed: Math.random() * 1.5 + 0.5,
@@ -185,18 +179,15 @@ for (let i = 0; i < 35; i++) {
   });
 }
 
-/* ========================================================
-   رسم الشخصيات الكرتونية فائقة الجودة (نفاثات وقبعات بيضاء)
-   ======================================================== */
+// رسم الشخصيات الكرتونية النفاثة
 function drawCuteCharacter(c, x, y, isGirl = false, animTime = 0) {
   c.save();
   c.translate(x, y);
 
-  // طفو خفيف
   let floatY = Math.sin(animTime * 0.08) * 4;
   c.translate(0, floatY);
 
-  // نيران النفاثة المتوهجة (Jetpack Flames)
+  // نيران النفاثة
   let flameSize = 10 + Math.random() * 8;
   let flameGrad = c.createLinearGradient(-16, 15, -16, 15 + flameSize);
   flameGrad.addColorStop(0, '#fdcb6e'); flameGrad.addColorStop(1, '#e17055');
@@ -205,10 +196,31 @@ function drawCuteCharacter(c, x, y, isGirl = false, animTime = 0) {
   c.moveTo(-22, 15); c.lineTo(-16, 15 + flameSize); c.lineTo(-10, 15);
   c.fill();
 
-  // الحقيبة النفاثة (Jetpack)
+  // النفاثة
   c.fillStyle = '#636e72'; c.beginPath(); c.roundRect(-25, -12, 14, 28, 6); c.fill();
   c.fillStyle = '#00cec9'; c.beginPath(); c.arc(-18, -2, 3, 0, Math.PI*2); c.fill();
 
-  // جسم الشخصية الكرتوني
+  // الجسم
   c.fillStyle = isGirl ? '#fd79a8' : '#74b9ff';
-  c.beginPath(); c.roundRect(-10, -10, 26, 28,
+  c.beginPath(); c.roundRect(-10, -10, 26, 28, 10); c.fill();
+
+  // الرأس
+  c.fillStyle = '#ffeaa7';
+  c.beginPath(); c.arc(3, -22, 16, 0, Math.PI * 2); c.fill();
+
+  if (isGirl) {
+    c.fillStyle = '#e17055';
+    c.beginPath(); c.arc(-5, -22, 17, Math.PI*0.5, Math.PI*1.8); c.fill();
+  }
+
+  // القبعة البيضاء الطبية
+  c.fillStyle = '#ffffff';
+  c.beginPath(); c.arc(3, -28, 16, Math.PI, Math.PI * 2); c.fill();
+  c.fillStyle = '#dfe6e9';
+  c.fillRect(-12, -30, 30, 4);
+  c.fillStyle = '#ff7675';
+  c.fillRect(1, -38, 4, 8); c.fillRect(-1, -36, 8, 4);
+
+  // العيون والابتسامة
+  c.fillStyle = '#2d3436';
+  c.beginPath(); c.
