@@ -46,9 +46,9 @@ canvas {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 5, 27, 0.85);
+  background: rgba(10, 5, 27, 0.9);
   backdrop-filter: blur(8px);
-  z-index: 10;
+  z-index: 100;
   gap: 15px;
   text-align: center;
   padding: 20px;
@@ -59,7 +59,7 @@ canvas {
   color: var(--gold);
   text-shadow: 0 0 15px rgba(255, 224, 102, 0.6), 2px 2px 0 #ff4d8d;
 }
-.subtitle { font-size: 18px; color: var(--accent); max-width: 80%; }
+.subtitle { font-size: 16px; color: var(--accent); max-width: 80%; }
 input#nin {
   width: 280px;
   padding: 10px;
@@ -72,7 +72,7 @@ input#nin {
   outline: none;
 }
 button.btn {
-  padding: 10px 28px;
+  padding: 12px 32px;
   font: 900 18px 'Cairo', sans-serif;
   color: #0b0720;
   background: linear-gradient(135deg, var(--gold), #ffaa00);
@@ -81,6 +81,7 @@ button.btn {
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(255, 224, 102, 0.4);
   transition: transform 0.1s, filter 0.2s;
+  pointer-events: auto;
 }
 button.btn:hover { filter: brightness(1.1); transform: scale(1.03); }
 button.btn:active { transform: scale(0.97); }
@@ -93,12 +94,12 @@ button.btn:active { transform: scale(0.97); }
   transform: translateX(-50%);
   width: 90%;
   max-width: 600px;
-  background: rgba(15, 10, 35, 0.9);
+  background: rgba(15, 10, 35, 0.95);
   border: 2px solid var(--primary);
   border-radius: 10px;
   padding: 12px 20px;
   display: none;
-  z-index: 5;
+  z-index: 50;
   box-shadow: 0 0 20px rgba(0,0,0,0.8);
 }
 .speaker { font-weight: 900; color: var(--gold); margin-bottom: 4px; font-size: 16px; }
@@ -111,7 +112,7 @@ button.btn:active { transform: scale(0.97); }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 4;
+  z-index: 40;
   pointer-events: none;
   font-weight: 900;
   text-shadow: 1px 1px 3px #000;
@@ -139,23 +140,23 @@ button.btn:active { transform: scale(0.97); }
   <!-- Start Screen -->
   <div id="start-screen" class="overlay">
     <div class="title">رحلة الأجنة السينمائية</div>
-    <div class="subtitle">انطلق بسرعة داخل قناة فالوب المتعرجة، تجنب القنابل والوحوش، وصل إلى وجهتك لتحقق المعجزة!</div>
+    <div class="subtitle">انطلق بسرعة داخل قناة فالوب المتعرجة، تجنب القنابل والوحوش، وصل إلى وجهتك لتحدث المعجزة!</div>
     <input id="nin" maxlength="20" placeholder="أدخل اسمك الكريم" value="بطل الرحلة">
-    <button class="btn" onclick="startGame()">ابدأ الرحلة السينمائية</button>
+    <button id="start-btn" class="btn">ابدأ الرحلة السينمائية</button>
   </div>
 
   <!-- Game Over Screen -->
   <div id="fail-screen" class="overlay" style="display:none;">
     <div class="title" style="color:#ff4d4d;">لم تكتمل الرحلة!</div>
     <div class="subtitle">تعرضت الخلية للتدمير قبل الوصول للمكان الصحيح. حاول مجدداً!</div>
-    <button class="btn" onclick="restartGame()">إعادة المحاولة</button>
+    <button id="restart-btn" class="btn">إعادة المحاولة</button>
   </div>
 
   <!-- Certificate / Ending Screen -->
   <div id="end-screen" class="overlay" style="display:none;">
     <div class="title">تهانينا! لقد اكتملت المعجزة 🎉</div>
     <div class="subtitle" id="cert-desc">وصلت الخلية بنجاح وانولدت إلى هذا العالم!</div>
-    <button class="btn" onclick="location.reload()">لعب مرة أخرى</button>
+    <button id="reload-btn" class="btn">لعب مرة أخرى</button>
   </div>
 </div>
 
@@ -169,26 +170,23 @@ let gameState = STATE_MENU;
 
 let playerName = "";
 let score = 0;
-let stage = 1; // 1: Cell travel, 2: Rapid Division, 3: Final Approach
+let stage = 1;
 let gameTime = 0;
 let transitionTimer = 0;
 let transitionText = "";
 
-// Player Cell Object (Cinematic Tunnel Camera View)
+// Player Cell Object
 const player = {
   x: 480,
   y: 360,
-  z: 0,
   radius: 18,
   targetX: 480,
   targetY: 360,
-  speed: 8,
   alive: true
 };
 
 // Curve & Tunnel Effect
 let tunnelOffset = 0;
-let tunnelCurve = 0;
 
 // Pixel Guides (Intro)
 const guides = [
@@ -200,15 +198,23 @@ let introStep = 0;
 // Obstacles & Effects
 let obstacles = [];
 let speedLines = [];
-let particles = [];
 
 // Ending Cutscene Variables
-let endCutsceneStep = 0;
 let endTimer = 0;
 
-// Sound FX Generator (Web Audio API)
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// Web Audio API
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
 function playBeep(freq, duration, type='square') {
+  if (!audioCtx) return;
   try {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -233,7 +239,9 @@ canvas.addEventListener('pointermove', (e) => {
   mouseY = (e.clientY - rect.top) * scaleY;
 });
 
-function startGame() {
+// Event Listeners for Buttons
+document.getElementById('start-btn').addEventListener('click', () => {
+  initAudio();
   playerName = document.getElementById('nin').value || 'بطل الرحلة';
   document.getElementById('start-screen').style.display = 'none';
   document.getElementById('hud').style.display = 'flex';
@@ -241,14 +249,20 @@ function startGame() {
   introStep = 0;
   showDialogue(guides[0].name, guides[0].text);
   playBeep(440, 0.2);
-}
+});
 
-function restartGame() {
+document.getElementById('restart-btn').addEventListener('click', () => {
+  initAudio();
   document.getElementById('fail-screen').style.display = 'none';
+  document.getElementById('hud').style.display = 'flex';
   player.x = 480; player.y = 360; player.alive = true;
   score = 0; stage = 1; obstacles = [];
   gameState = STATE_PLAYING;
-}
+});
+
+document.getElementById('reload-btn').addEventListener('click', () => {
+  location.reload();
+});
 
 function showDialogue(speaker, text) {
   const box = document.getElementById('dialogue-box');
@@ -261,22 +275,20 @@ function hideDialogue() {
   document.getElementById('dialogue-box').style.display = 'none';
 }
 
-// Spawn Speed Lines for Motion Effect
+// Spawn Speed Lines
 for(let i=0; i<40; i++) {
   speedLines.push({
     x: Math.random() * 960,
     y: Math.random() * 540,
-    z: Math.random() * 1000,
-    length: Math.random() * 80 + 20
+    z: Math.random() * 1000
   });
 }
 
-// Main Game Loop
+// Update Loop
 function update() {
   gameTime++;
 
   if (gameState === STATE_INTRO) {
-    // Animate Pixel Guides
     guides[0].x += (guides[0].targetX - guides[0].x) * 0.08;
     guides[1].x += (guides[1].targetX - guides[1].x) * 0.08;
 
@@ -296,11 +308,9 @@ function update() {
     score += 1;
     document.getElementById('score-txt').innerText = `المسافة: ${Math.floor(score/10)}m`;
 
-    // Tunnel Curve Motion
     tunnelOffset += 0.05;
-    tunnelCurve = Math.sin(tunnelOffset * 0.5) * 150;
 
-    // Follow Mouse / Touch smoothly
+    // Follow Pointer Smoothly
     player.targetX = mouseX;
     player.targetY = mouseY;
     player.x += (player.targetX - player.x) * 0.15;
@@ -316,7 +326,7 @@ function update() {
       player.y = tunnelCenterY + Math.sin(angle) * 220;
     }
 
-    // Spawn Obstacles (Bombs & Monsters)
+    // Spawn Obstacles
     if (gameTime % Math.max(15, 40 - stage * 8) === 0) {
       const type = Math.random() > 0.4 ? 'bomb' : 'monster';
       const angle = Math.random() * Math.PI * 2;
@@ -324,7 +334,7 @@ function update() {
       obstacles.push({
         x: tunnelCenterX + Math.cos(angle) * rad,
         y: tunnelCenterY + Math.sin(angle) * rad,
-        z: 1000, // Distance away
+        z: 1000,
         type: type,
         radius: type === 'bomb' ? 20 : 28,
         rot: 0
@@ -334,4 +344,324 @@ function update() {
     // Update Obstacles
     for (let i = obstacles.length - 1; i >= 0; i--) {
       let ob = obstacles[i];
-      ob.z -= 18 + stage * 4
+      ob.z -= 18 + stage * 4;
+      ob.rot += 0.05;
+
+      if (ob.z < 100 && ob.z > 0) {
+        let d = Math.hypot(player.x - ob.x, player.y - ob.y);
+        if (d < player.radius + ob.radius) {
+          playBeep(150, 0.4, 'sawtooth');
+          gameState = STATE_GAMEOVER;
+          document.getElementById('hud').style.display = 'none';
+          document.getElementById('fail-screen').style.display = 'flex';
+        }
+      }
+
+      if (ob.z <= 0) obstacles.splice(i, 1);
+    }
+
+    // Stages
+    if (score === 800 && stage === 1) {
+      triggerTransition(2, "لحظة التحول الأول: انقسام الزيجوت إلى خليتين!");
+    } else if (score === 1600 && stage === 2) {
+      triggerTransition(3, "لحظة التحول الثاني: تكون كتلة الخلايا (المورولا)!");
+    } else if (score >= 2500 && stage === 3) {
+      gameState = STATE_ENDING;
+      endTimer = 0;
+      document.getElementById('hud').style.display = 'none';
+    }
+  }
+
+  if (gameState === STATE_TRANSITION) {
+    transitionTimer--;
+    if (transitionTimer <= 0) {
+      gameState = STATE_PLAYING;
+    }
+  }
+}
+
+function triggerTransition(nextStage, text) {
+  stage = nextStage;
+  gameState = STATE_TRANSITION;
+  transitionTimer = 120;
+  transitionText = text;
+  playBeep(880, 0.5, 'sine');
+}
+
+// Render Loop
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (gameState === STATE_INTRO || gameState === STATE_PLAYING || gameState === STATE_TRANSITION) {
+    drawTunnel();
+    drawSpeedLines();
+    drawObstacles();
+    drawPlayerCell();
+
+    if (gameState === STATE_INTRO) {
+      drawPixelGuides();
+    }
+
+    if (gameState === STATE_TRANSITION) {
+      drawTransitionOverlay();
+    }
+  } else if (gameState === STATE_ENDING) {
+    drawEndingCutscene();
+  }
+}
+
+function drawTunnel() {
+  ctx.save();
+  const cx = 480 + Math.sin(tunnelOffset) * 80;
+  const cy = 270;
+
+  let grad = ctx.createRadialGradient(cx, cy, 20, cx, cy, 500);
+  grad.addColorStop(0, '#3a0d2e');
+  grad.addColorStop(0.5, '#200826');
+  grad.addColorStop(1, '#0a0312');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let r = 500; r > 20; r -= 40) {
+    let offsetFactor = (500 - r) / 500;
+    let ringX = cx + Math.sin(tunnelOffset + offsetFactor * 2) * (100 * offsetFactor);
+    let ringY = cy + Math.cos(tunnelOffset * 0.8) * (40 * offsetFactor);
+
+    ctx.beginPath();
+    ctx.arc(ringX, ringY, r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 77, 141, ${0.15 + (1 - offsetFactor) * 0.2})`;
+    ctx.lineWidth = 6 * (1 - offsetFactor) + 1;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawSpeedLines() {
+  ctx.strokeStyle = 'rgba(255, 214, 231, 0.3)';
+  ctx.lineWidth = 1.5;
+  speedLines.forEach(line => {
+    line.z -= 25;
+    if (line.z <= 0) line.z = 1000;
+    let scale = 500 / line.z;
+    let x = (line.x - 480) * scale + 480;
+    let y = (line.y - 270) * scale + 270;
+    let x2 = (line.x - 480) * (scale * 1.2) + 480;
+    let y2 = (line.y - 270) * (scale * 1.2) + 270;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  });
+}
+
+function drawPlayerCell() {
+  ctx.save();
+  ctx.translate(player.x, player.y);
+
+  let aura = ctx.createRadialGradient(0, 0, 5, 0, 0, player.radius * 2.5);
+  aura.addColorStop(0, 'rgba(255, 224, 102, 0.8)');
+  aura.addColorStop(0.5, 'rgba(255, 77, 141, 0.4)');
+  aura.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = aura;
+  ctx.beginPath();
+  ctx.arc(0, 0, player.radius * 2.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#ffe066';
+  ctx.strokeStyle = '#ff4d8d';
+  ctx.lineWidth = 3;
+
+  if (stage === 1) {
+    ctx.beginPath();
+    ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  } else if (stage === 2) {
+    ctx.beginPath();
+    ctx.arc(-8, 0, player.radius * 0.8, 0, Math.PI * 2);
+    ctx.arc(8, 0, player.radius * 0.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  } else {
+    for (let i = 0; i < 5; i++) {
+      let a = (i * Math.PI * 2) / 5;
+      ctx.beginPath();
+      ctx.arc(Math.cos(a)*8, Math.sin(a)*8, 10, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawObstacles() {
+  obstacles.forEach(ob => {
+    let scale = 400 / ob.z;
+    let screenX = (ob.x - 480) * scale + 480;
+    let screenY = (ob.y - 270) * scale + 270;
+    let sz = ob.radius * scale;
+
+    if (sz < 1) return;
+
+    ctx.save();
+    ctx.translate(screenX, screenY);
+    ctx.rotate(ob.rot);
+
+    if (ob.type === 'bomb') {
+      ctx.fillStyle = '#ff3333';
+      ctx.beginPath();
+      ctx.arc(0, 0, sz, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ff9999';
+      ctx.lineWidth = 2 * scale;
+      for (let i = 0; i < 8; i++) {
+        let a = (i * Math.PI) / 4;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * sz, Math.sin(a) * sz);
+        ctx.lineTo(Math.cos(a) * (sz + 10 * scale), Math.sin(a) * (sz + 10 * scale));
+        ctx.stroke();
+      }
+    } else {
+      ctx.fillStyle = '#a020f0';
+      ctx.beginPath();
+      ctx.arc(0, 0, sz, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#00ffcc';
+      ctx.beginPath();
+      ctx.arc(-sz*0.3, -sz*0.2, sz*0.2, 0, Math.PI*2);
+      ctx.arc(sz*0.3, -sz*0.2, sz*0.2, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  });
+}
+
+function drawPixelGuides() {
+  guides.forEach(g => {
+    ctx.save();
+    ctx.translate(g.x, g.y);
+    ctx.fillStyle = '#555';
+    ctx.fillRect(-15, -10, 30, 40);
+    ctx.fillStyle = '#ffaa00';
+    ctx.fillRect(-10, 30, 8, 15 + Math.sin(gameTime)*5);
+    ctx.fillRect(2, 30, 8, 15 + Math.sin(gameTime)*5);
+    ctx.fillStyle = g.color;
+    ctx.fillRect(-12, -30, 24, 20);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-15, -38, 30, 10);
+    ctx.restore();
+  });
+}
+
+function drawTransitionOverlay() {
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#ffe066';
+  ctx.font = '900 24px Cairo';
+  ctx.textAlign = 'center';
+  ctx.fillText("⚡ " + transitionText + " ⚡", 480, 270);
+}
+
+// Final Ending Cutscene
+function drawEndingCutscene() {
+  endTimer++;
+
+  if (endTimer < 250) {
+    ctx.fillStyle = '#e8d5c4';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.filter = 'blur(12px)';
+    ctx.fillStyle = '#3a5a80';
+    ctx.beginPath(); ctx.arc(360, 220, 70, 0, Math.PI*2); ctx.fill();
+    ctx.fillRect(290, 280, 140, 200);
+
+    ctx.fillStyle = '#c86b85';
+    ctx.beginPath(); ctx.arc(600, 240, 65, 0, Math.PI*2); ctx.fill();
+    ctx.fillRect(535, 300, 130, 200);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.beginPath(); ctx.arc(360, 240, 20, 0, Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(600, 255, 18, 0, Math.PI); ctx.fill();
+    ctx.restore();
+
+    let eyeOpen = Math.min(1, endTimer / 150);
+    let lidHeight = (1 - eyeOpen) * (canvas.height / 2);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, lidHeight);
+    ctx.fillRect(0, canvas.height - lidHeight, canvas.width, lidHeight);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '900 22px Cairo';
+    ctx.textAlign = 'center';
+    ctx.fillText("فتحت عينيك على العالم... أمك وأبوك يبتسمان لك 👶", 480, 500);
+  }
+  else if (endTimer < 500) {
+    ctx.fillStyle = '#1b1340';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    let progress = (endTimer - 250) / 250;
+    let years = Math.floor(progress * 14) + 1;
+
+    ctx.fillStyle = '#ffe066';
+    ctx.font = '900 32px Cairo';
+    ctx.textAlign = 'center';
+    ctx.fillText(`تمر السنوات... العمر: ${years} سنة`, 480, 100);
+
+    ctx.fillStyle = '#ff8fc7';
+    ctx.fillRect(460, 360 - years * 8, 40, years * 8);
+    ctx.fillStyle = '#7ad7ff';
+    ctx.fillRect(380, 200, 50, 160);
+    ctx.fillRect(530, 220, 45, 140);
+  }
+  else {
+    ctx.fillStyle = '#090514';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#1c1236';
+    for(let i=0; i<5; i++) {
+      ctx.fillRect(0, 100 + i*40, canvas.width, 30);
+    }
+
+    let spotGrad = ctx.createRadialGradient(480, 180, 10, 480, 180, 180);
+    spotGrad.addColorStop(0, 'rgba(255, 255, 200, 0.9)');
+    spotGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = spotGrad;
+    ctx.beginPath(); ctx.arc(480, 180, 180, 0, Math.PI*2); ctx.fill();
+
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(440, 140, 25, 60);
+    ctx.fillRect(495, 145, 22, 55);
+
+    let clap = Math.sin(gameTime * 0.3) * 8;
+    ctx.fillRect(430 - clap, 155, 12, 6);
+    ctx.fillRect(520 + clap, 160, 12, 6);
+
+    ctx.fillStyle = '#ff4d8d';
+    ctx.fillRect(465, 380, 30, 90);
+
+    ctx.fillStyle = '#ffe066';
+    ctx.font = '900 20px Cairo';
+    ctx.textAlign = 'center';
+    ctx.fillText("في زحمة المراهقة والإنجازات... تشعر أنك غير مرئي،", 480, 490);
+    ctx.fillText("لكنك عندما تنظر للمدرجات، تجد نور أمك وأبيك واقفين يصفقون لك فخراً! ❤️", 480, 520);
+
+    if (endTimer > 650) {
+      document.getElementById('end-screen').style.display = 'flex';
+    }
+  }
+}
+
+// Loop
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
