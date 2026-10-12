@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>رحلة الحياة - سينمائي</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
+<title>رحلة الحياة - كاملة مع جمع القلوب</title>
 <style>
 :root {
   --bg: #0a051b;
@@ -17,7 +16,7 @@ html, body {
   height: 100%; width: 100%;
   background: var(--bg);
   color: #fff;
-  font-family: 'Cairo', sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -34,90 +33,39 @@ html, body {
   overflow: hidden;
   background: #000;
 }
-canvas {
-  width: 100%; height: 100%;
-  display: block;
-}
-/* UI Overlays */
+canvas { width: 100%; height: 100%; display: block; }
 .overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(10, 5, 27, 0.9);
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: rgba(10, 5, 27, 0.92);
   backdrop-filter: blur(8px);
-  z-index: 100;
-  gap: 15px;
-  text-align: center;
-  padding: 20px;
+  z-index: 100; gap: 15px; text-align: center; padding: 20px;
 }
 .title {
-  font-size: 32px;
-  font-weight: 900;
-  color: var(--gold);
+  font-size: 32px; font-weight: 900; color: var(--gold);
   text-shadow: 0 0 15px rgba(255, 224, 102, 0.6), 2px 2px 0 #ff4d8d;
 }
 .subtitle { font-size: 16px; color: var(--accent); max-width: 80%; }
 input#nin {
-  width: 280px;
-  padding: 10px;
-  font: 700 18px 'Cairo', sans-serif;
-  text-align: center;
-  background: #1b1340;
-  color: #fff;
-  border: 2px solid var(--primary);
-  border-radius: 8px;
-  outline: none;
+  width: 280px; padding: 10px; font-size: 18px; font-weight: bold;
+  text-align: center; background: #1b1340; color: #fff;
+  border: 2px solid var(--primary); border-radius: 8px; outline: none;
 }
 button.btn {
-  padding: 12px 32px;
-  font: 900 18px 'Cairo', sans-serif;
-  color: #0b0720;
-  background: linear-gradient(135deg, var(--gold), #ffaa00);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
+  padding: 14px 36px; font-size: 20px; font-weight: 900;
+  color: #0b0720; background: linear-gradient(135deg, var(--gold), #ffaa00);
+  border: none; border-radius: 8px; cursor: pointer;
   box-shadow: 0 4px 15px rgba(255, 224, 102, 0.4);
-  transition: transform 0.1s, filter 0.2s;
-  pointer-events: auto;
 }
-button.btn:hover { filter: brightness(1.1); transform: scale(1.03); }
-button.btn:active { transform: scale(0.97); }
+button.btn:active { transform: scale(0.96); }
 
-/* Cinema Cutscene Overlay */
-#dialogue-box {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 600px;
-  background: rgba(15, 10, 35, 0.95);
-  border: 2px solid var(--primary);
-  border-radius: 10px;
-  padding: 12px 20px;
-  display: none;
-  z-index: 50;
-  box-shadow: 0 0 20px rgba(0,0,0,0.8);
-}
-.speaker { font-weight: 900; color: var(--gold); margin-bottom: 4px; font-size: 16px; }
-.dialogue-text { font-size: 15px; color: #fff; line-height: 1.4; }
-
-/* HUD */
 #hud {
-  position: absolute;
-  top: 15px; left: 20px; right: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 40;
-  pointer-events: none;
-  font-weight: 900;
-  text-shadow: 1px 1px 3px #000;
+  position: absolute; top: 15px; left: 20px; right: 20px;
+  display: none; justify-content: space-between; align-items: center;
+  z-index: 40; pointer-events: none; font-weight: 900;
 }
-.hud-item { background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); }
+.hud-item { background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); }
 </style>
 </head>
 <body>
@@ -125,38 +73,27 @@ button.btn:active { transform: scale(0.97); }
 <div class="game-container">
   <canvas id="gc" width="960" height="540"></canvas>
 
-  <!-- HUD -->
-  <div id="hud" style="display:none;">
+  <div id="hud">
     <div class="hud-item" id="stage-txt">المرحلة 1: الانطلاق في قناة فالوب</div>
-    <div class="hud-item" id="score-txt">المسافة: 0m</div>
+    <div class="hud-item" id="score-txt">النقاط: 0 ❤️</div>
   </div>
 
-  <!-- Dialogue Box -->
-  <div id="dialogue-box">
-    <div class="speaker" id="d-speaker">مرشد الرحلة</div>
-    <div class="dialogue-text" id="d-text">...</div>
-  </div>
-
-  <!-- Start Screen -->
   <div id="start-screen" class="overlay">
     <div class="title">رحلة الأجنة السينمائية</div>
-    <div class="subtitle">انطلق بسرعة داخل قناة فالوب المتعرجة، تجنب القنابل والوحوش، وصل إلى وجهتك لتحدث المعجزة!</div>
+    <div class="subtitle">انطلق، انغرس في الرحم، واجمع القلوب والنقاط أثناء نمو الجنين حتى اكتمال معجزة الحياة!</div>
     <input id="nin" maxlength="20" placeholder="أدخل اسمك الكريم" value="بطل الرحلة">
-    <button id="start-btn" class="btn">ابدأ الرحلة السينمائية</button>
+    <button class="btn" onclick="startFlow()">ابدأ الرحلة السينمائية</button>
   </div>
 
-  <!-- Game Over Screen -->
   <div id="fail-screen" class="overlay" style="display:none;">
     <div class="title" style="color:#ff4d4d;">لم تكتمل الرحلة!</div>
-    <div class="subtitle">تعرضت الخلية للتدمير قبل الوصول للمكان الصحيح. حاول مجدداً!</div>
-    <button id="restart-btn" class="btn">إعادة المحاولة</button>
+    <div class="subtitle">اصطدمت بالعقبات قبل الانغراس والنمو. حاول مجدداً!</div>
+    <button class="btn" onclick="restartFlow()">إعادة المحاولة</button>
   </div>
 
-  <!-- Certificate / Ending Screen -->
   <div id="end-screen" class="overlay" style="display:none;">
-    <div class="title">تهانينا! لقد اكتملت المعجزة 🎉</div>
-    <div class="subtitle" id="cert-desc">وصلت الخلية بنجاح وانولدت إلى هذا العالم!</div>
-    <button id="reload-btn" class="btn">لعب مرة أخرى</button>
+    <div class="title">تهانينا! اكتملت معجزة الحياة 🎉</div>
+    <button class="btn" onclick="location.reload()">لعب مرة أخرى</button>
   </div>
 </div>
 
@@ -164,503 +101,348 @@ button.btn:active { transform: scale(0.97); }
 const canvas = document.getElementById('gc');
 const ctx = canvas.getContext('2d');
 
-// Game States
-const STATE_MENU = 0, STATE_INTRO = 1, STATE_PLAYING = 2, STATE_TRANSITION = 3, STATE_ENDING = 4, STATE_GAMEOVER = 5;
-let gameState = STATE_MENU;
+let gameState = 0; // 0: Menu, 1: Play Tunnel, 2: Implantation, 3: Fetal Growth (Hearts), 4: Film, 5: GameOver
+let heartsScore = 0, distanceScore = 0, stage = 1, gameTime = 0;
 
-let playerName = "";
-let score = 0;
-let stage = 1;
-let gameTime = 0;
-let transitionTimer = 0;
-let transitionText = "";
-
-// Player Cell Object
-const player = {
-  x: 480,
-  y: 360,
-  radius: 18,
-  targetX: 480,
-  targetY: 360,
-  alive: true
-};
-
-// Curve & Tunnel Effect
+const camera = { x: 480, y: 270, targetX: 480, targetY: 270 };
 let tunnelOffset = 0;
 
-// Pixel Guides (Intro)
-const guides = [
-  { name: 'سارة (Pixel)', color: '#ff73c5', x: -100, y: 200, targetX: 280, targetY: 220, text: 'انتبه! قناة فالوب متعرجة مليئة بالمخاطر القاتلة!' },
-  { name: 'عمر (Pixel)', color: '#52b2ff', x: 1060, y: 200, targetX: 680, targetY: 220, text: 'استخدم الحقيبة النفاثة للتحرك بسرعة! يجب أن تصل للمكان الصحيح وتعيش!' }
-];
-let introStep = 0;
+let obstacles = [], hearts = [], speedLines = [], endTimer = 0;
+let targetWall = { x: 480, y: 120, radius: 45 };
 
-// Obstacles & Effects
-let obstacles = [];
-let speedLines = [];
-
-// Ending Cutscene Variables
-let endTimer = 0;
-
-// Web Audio API
-let audioCtx = null;
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+for(let i=0; i<40; i++) {
+  speedLines.push({ x: Math.random() * 960, y: Math.random() * 540, z: Math.random() * 1000 });
 }
 
-function playBeep(freq, duration, type='square') {
-  if (!audioCtx) return;
-  try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch(e){}
-}
-
-// Input Handling
-let mouseX = 480, mouseY = 360;
-canvas.addEventListener('pointermove', (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
-  mouseX = (e.clientX - rect.left) * scaleX;
-  mouseY = (e.clientY - rect.top) * scaleY;
-});
-
-// Event Listeners for Buttons
-document.getElementById('start-btn').addEventListener('click', () => {
-  initAudio();
-  playerName = document.getElementById('nin').value || 'بطل الرحلة';
+function startFlow() {
   document.getElementById('start-screen').style.display = 'none';
   document.getElementById('hud').style.display = 'flex';
-  gameState = STATE_INTRO;
-  introStep = 0;
-  showDialogue(guides[0].name, guides[0].text);
-  playBeep(440, 0.2);
-});
+  gameState = 1;
+}
 
-document.getElementById('restart-btn').addEventListener('click', () => {
-  initAudio();
+function restartFlow() {
   document.getElementById('fail-screen').style.display = 'none';
   document.getElementById('hud').style.display = 'flex';
-  player.x = 480; player.y = 360; player.alive = true;
-  score = 0; stage = 1; obstacles = [];
-  gameState = STATE_PLAYING;
+  camera.x = 480; camera.y = 270;
+  heartsScore = 0; distanceScore = 0; stage = 1; obstacles = []; hearts = [];
+  gameState = 1;
+}
+
+canvas.addEventListener('pointermove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  camera.targetX = (e.clientX - rect.left) * (canvas.width / rect.width);
+  camera.targetY = (e.clientY - rect.top) * (canvas.height / rect.height);
 });
 
-document.getElementById('reload-btn').addEventListener('click', () => {
-  location.reload();
-});
-
-function showDialogue(speaker, text) {
-  const box = document.getElementById('dialogue-box');
-  document.getElementById('d-speaker').innerText = speaker;
-  document.getElementById('d-text').innerText = text;
-  box.style.display = 'block';
-}
-
-function hideDialogue() {
-  document.getElementById('dialogue-box').style.display = 'none';
-}
-
-// Spawn Speed Lines
-for(let i=0; i<40; i++) {
-  speedLines.push({
-    x: Math.random() * 960,
-    y: Math.random() * 540,
-    z: Math.random() * 1000
-  });
-}
-
-// Update Loop
 function update() {
   gameTime++;
 
-  if (gameState === STATE_INTRO) {
-    guides[0].x += (guides[0].targetX - guides[0].x) * 0.08;
-    guides[1].x += (guides[1].targetX - guides[1].x) * 0.08;
+  // 1. Fallopian Tube Stage
+  if (gameState === 1) {
+    distanceScore++;
+    document.getElementById('score-txt').innerText = `المسافة: ${Math.floor(distanceScore/10)}m`;
+    tunnelOffset += 0.06;
 
-    if (gameTime % 180 === 0) {
-      introStep++;
-      if (introStep === 1) {
-        showDialogue(guides[1].name, guides[1].text);
-        playBeep(587, 0.2);
-      } else if (introStep >= 2) {
-        hideDialogue();
-        gameState = STATE_PLAYING;
-      }
-    }
-  }
+    camera.x += (camera.targetX - camera.x) * 0.15;
+    camera.y += (camera.targetY - camera.y) * 0.15;
 
-  if (gameState === STATE_PLAYING) {
-    score += 1;
-    document.getElementById('score-txt').innerText = `المسافة: ${Math.floor(score/10)}m`;
-
-    tunnelOffset += 0.05;
-
-    // Follow Pointer Smoothly
-    player.targetX = mouseX;
-    player.targetY = mouseY;
-    player.x += (player.targetX - player.x) * 0.15;
-    player.y += (player.targetY - player.y) * 0.15;
-
-    // Keep Player inside tunnel bounds
-    const tunnelCenterX = 480 + Math.sin(tunnelOffset) * 80;
+    const tunnelCenterX = 480 + Math.sin(tunnelOffset) * 90;
     const tunnelCenterY = 270;
-    const distFromCenter = Math.hypot(player.x - tunnelCenterX, player.y - tunnelCenterY);
-    if (distFromCenter > 220) {
-      const angle = Math.atan2(player.y - tunnelCenterY, player.x - tunnelCenterX);
-      player.x = tunnelCenterX + Math.cos(angle) * 220;
-      player.y = tunnelCenterY + Math.sin(angle) * 220;
-    }
 
-    // Spawn Obstacles
-    if (gameTime % Math.max(15, 40 - stage * 8) === 0) {
+    if (gameTime % Math.max(12, 35 - stage * 6) === 0) {
       const type = Math.random() > 0.4 ? 'bomb' : 'monster';
       const angle = Math.random() * Math.PI * 2;
-      const rad = Math.random() * 180;
       obstacles.push({
-        x: tunnelCenterX + Math.cos(angle) * rad,
-        y: tunnelCenterY + Math.sin(angle) * rad,
-        z: 1000,
-        type: type,
-        radius: type === 'bomb' ? 20 : 28,
-        rot: 0
+        x: tunnelCenterX + Math.cos(angle) * (Math.random() * 180),
+        y: tunnelCenterY + Math.sin(angle) * (Math.random() * 180),
+        z: 1000, type, radius: type === 'bomb' ? 22 : 28
       });
     }
 
-    // Update Obstacles
     for (let i = obstacles.length - 1; i >= 0; i--) {
       let ob = obstacles[i];
-      ob.z -= 18 + stage * 4;
-      ob.rot += 0.05;
+      ob.z -= 20 + stage * 4;
 
-      if (ob.z < 100 && ob.z > 0) {
-        let d = Math.hypot(player.x - ob.x, player.y - ob.y);
-        if (d < player.radius + ob.radius) {
-          playBeep(150, 0.4, 'sawtooth');
-          gameState = STATE_GAMEOVER;
+      if (ob.z < 60 && ob.z > 0) {
+        if (Math.hypot(camera.x - ob.x, camera.y - ob.y) < ob.radius + 15) {
+          gameState = 5;
           document.getElementById('hud').style.display = 'none';
           document.getElementById('fail-screen').style.display = 'flex';
         }
       }
-
       if (ob.z <= 0) obstacles.splice(i, 1);
     }
 
-    // Stages
-    if (score === 800 && stage === 1) {
-      triggerTransition(2, "لحظة التحول الأول: انقسام الزيجوت إلى خليتين!");
-    } else if (score === 1600 && stage === 2) {
-      triggerTransition(3, "لحظة التحول الثاني: تكون كتلة الخلايا (المورولا)!");
-    } else if (score >= 2500 && stage === 3) {
-      gameState = STATE_ENDING;
-      endTimer = 0;
-      document.getElementById('hud').style.display = 'none';
+    if (distanceScore === 500 && stage === 1) {
+      stage = 2;
+      document.getElementById('stage-txt').innerText = "المرحلة 2: الانقسامات الخلوية المتتابعة";
+    } else if (distanceScore >= 1200 && stage === 2) {
+      gameState = 2; // Implantation
+      document.getElementById('stage-txt').innerText = "المرحلة 3: اثبت في الجدار الصحيح للرحم!";
     }
   }
 
-  if (gameState === STATE_TRANSITION) {
-    transitionTimer--;
-    if (transitionTimer <= 0) {
-      gameState = STATE_PLAYING;
+  // 2. Implantation Zone
+  if (gameState === 2) {
+    camera.x += (camera.targetX - camera.x) * 0.15;
+    camera.y += (camera.targetY - camera.y) * 0.15;
+
+    let dist = Math.hypot(camera.x - targetWall.x, camera.y - targetWall.y);
+    if (dist < targetWall.radius) {
+      gameState = 3; // Fetal Growth & Collect Hearts
+      obstacles = [];
+      document.getElementById('stage-txt').innerText = "المرحلة 4: نمو الجنين وجمع القلوب ❤️";
+      document.getElementById('score-txt').innerText = `النقاط: 0 ❤️`;
+    }
+  }
+
+  // 3. Fetal Growth & Collecting Hearts Stage
+  if (gameState === 3) {
+    camera.x += (camera.targetX - camera.x) * 0.15;
+    camera.y += (camera.targetY - camera.y) * 0.15;
+
+    // Spawn Hearts
+    if (gameTime % 20 === 0) {
+      hearts.push({
+        x: Math.random() * 880 + 40,
+        y: Math.random() * 460 + 40,
+        size: 16,
+        pulse: 0
+      });
+    }
+
+    // Collect Hearts Collision
+    for (let i = hearts.length - 1; i >= 0; i--) {
+      let h = hearts[i];
+      h.pulse += 0.1;
+      if (Math.hypot(camera.x - h.x, camera.y - h.y) < h.size + 20) {
+        heartsScore += 10;
+        document.getElementById('score-txt').innerText = `النقاط: ${heartsScore} ❤️`;
+        hearts.splice(i, 1);
+      }
+    }
+
+    // Fetal Growth Milestones
+    if (heartsScore < 50) {
+      document.getElementById('stage-txt').innerText = "نمو الجنين: الأسبوع 4 (تكون المضغة)";
+    } else if (heartsScore < 120) {
+      document.getElementById('stage-txt').innerText = "نمو الجنين: الأسبوع 12 (بداية تشكل الأطراف والوجه)";
+    } else if (heartsScore < 200) {
+      document.getElementById('stage-txt').innerText = "نمو الجنين: الأسبوع 20 (بداية سماع نبضات القلب)";
+    } else if (heartsScore >= 280) {
+      document.getElementById('stage-txt').innerText = "نمو الجنين: الأسبوع 36 (اكتمل النمو تماماً 🎉)";
+      // Transition to Film
+      setTimeout(() => {
+        if (gameState === 3) {
+          gameState = 4;
+          endTimer = 0;
+          document.getElementById('hud').style.display = 'none';
+        }
+      }, 1000);
     }
   }
 }
 
-function triggerTransition(nextStage, text) {
-  stage = nextStage;
-  gameState = STATE_TRANSITION;
-  transitionTimer = 120;
-  transitionText = text;
-  playBeep(880, 0.5, 'sine');
-}
-
-// Render Loop
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (gameState === STATE_INTRO || gameState === STATE_PLAYING || gameState === STATE_TRANSITION) {
-    drawTunnel();
-    drawSpeedLines();
-    drawObstacles();
-    drawPlayerCell();
+  if (gameState === 1) {
+    const cx = 480 + Math.sin(tunnelOffset) * 90;
+    let grad = ctx.createRadialGradient(cx, 270, 20, cx, 270, 500);
+    grad.addColorStop(0, '#3a0d2e'); grad.addColorStop(1, '#0a0312');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (gameState === STATE_INTRO) {
-      drawPixelGuides();
-    }
-
-    if (gameState === STATE_TRANSITION) {
-      drawTransitionOverlay();
-    }
-  } else if (gameState === STATE_ENDING) {
-    drawEndingCutscene();
-  }
-}
-
-function drawTunnel() {
-  ctx.save();
-  const cx = 480 + Math.sin(tunnelOffset) * 80;
-  const cy = 270;
-
-  let grad = ctx.createRadialGradient(cx, cy, 20, cx, cy, 500);
-  grad.addColorStop(0, '#3a0d2e');
-  grad.addColorStop(0.5, '#200826');
-  grad.addColorStop(1, '#0a0312');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  for (let r = 500; r > 20; r -= 40) {
-    let offsetFactor = (500 - r) / 500;
-    let ringX = cx + Math.sin(tunnelOffset + offsetFactor * 2) * (100 * offsetFactor);
-    let ringY = cy + Math.cos(tunnelOffset * 0.8) * (40 * offsetFactor);
-
-    ctx.beginPath();
-    ctx.arc(ringX, ringY, r, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(255, 77, 141, ${0.15 + (1 - offsetFactor) * 0.2})`;
-    ctx.lineWidth = 6 * (1 - offsetFactor) + 1;
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function drawSpeedLines() {
-  ctx.strokeStyle = 'rgba(255, 214, 231, 0.3)';
-  ctx.lineWidth = 1.5;
-  speedLines.forEach(line => {
-    line.z -= 25;
-    if (line.z <= 0) line.z = 1000;
-    let scale = 500 / line.z;
-    let x = (line.x - 480) * scale + 480;
-    let y = (line.y - 270) * scale + 270;
-    let x2 = (line.x - 480) * (scale * 1.2) + 480;
-    let y2 = (line.y - 270) * (scale * 1.2) + 270;
-
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-  });
-}
-
-function drawPlayerCell() {
-  ctx.save();
-  ctx.translate(player.x, player.y);
-
-  let aura = ctx.createRadialGradient(0, 0, 5, 0, 0, player.radius * 2.5);
-  aura.addColorStop(0, 'rgba(255, 224, 102, 0.8)');
-  aura.addColorStop(0.5, 'rgba(255, 77, 141, 0.4)');
-  aura.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = aura;
-  ctx.beginPath();
-  ctx.arc(0, 0, player.radius * 2.5, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#ffe066';
-  ctx.strokeStyle = '#ff4d8d';
-  ctx.lineWidth = 3;
-
-  if (stage === 1) {
-    ctx.beginPath();
-    ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-  } else if (stage === 2) {
-    ctx.beginPath();
-    ctx.arc(-8, 0, player.radius * 0.8, 0, Math.PI * 2);
-    ctx.arc(8, 0, player.radius * 0.8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-  } else {
-    for (let i = 0; i < 5; i++) {
-      let a = (i * Math.PI * 2) / 5;
+    for (let r = 500; r > 20; r -= 40) {
       ctx.beginPath();
-      ctx.arc(Math.cos(a)*8, Math.sin(a)*8, 10, 0, Math.PI*2);
-      ctx.fill();
-      ctx.stroke();
+      ctx.arc(cx, 270, r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255, 77, 141, ${r/1000})`;
+      ctx.lineWidth = 3; ctx.stroke();
     }
-  }
 
-  ctx.restore();
-}
-
-function drawObstacles() {
-  obstacles.forEach(ob => {
-    let scale = 400 / ob.z;
-    let screenX = (ob.x - 480) * scale + 480;
-    let screenY = (ob.y - 270) * scale + 270;
-    let sz = ob.radius * scale;
-
-    if (sz < 1) return;
-
-    ctx.save();
-    ctx.translate(screenX, screenY);
-    ctx.rotate(ob.rot);
-
-    if (ob.type === 'bomb') {
-      ctx.fillStyle = '#ff3333';
-      ctx.beginPath();
-      ctx.arc(0, 0, sz, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#ff9999';
-      ctx.lineWidth = 2 * scale;
-      for (let i = 0; i < 8; i++) {
-        let a = (i * Math.PI) / 4;
-        ctx.beginPath();
-        ctx.moveTo(Math.cos(a) * sz, Math.sin(a) * sz);
-        ctx.lineTo(Math.cos(a) * (sz + 10 * scale), Math.sin(a) * (sz + 10 * scale));
-        ctx.stroke();
+    obstacles.forEach(ob => {
+      let scale = 400 / ob.z;
+      let sx = (ob.x - camera.x) * scale + 480;
+      let sy = (ob.y - camera.y) * scale + 270;
+      let sz = ob.radius * scale;
+      if (sz > 0.5) {
+        ctx.fillStyle = ob.type === 'bomb' ? '#ff3333' : '#a020f0';
+        ctx.beginPath(); ctx.arc(sx, sy, sz, 0, Math.PI * 2); ctx.fill();
       }
-    } else {
-      ctx.fillStyle = '#a020f0';
-      ctx.beginPath();
-      ctx.arc(0, 0, sz, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#00ffcc';
-      ctx.beginPath();
-      ctx.arc(-sz*0.3, -sz*0.2, sz*0.2, 0, Math.PI*2);
-      ctx.arc(sz*0.3, -sz*0.2, sz*0.2, 0, Math.PI*2);
-      ctx.fill();
-    }
+    });
 
-    ctx.restore();
-  });
-}
-
-function drawPixelGuides() {
-  guides.forEach(g => {
-    ctx.save();
-    ctx.translate(g.x, g.y);
-    ctx.fillStyle = '#555';
-    ctx.fillRect(-15, -10, 30, 40);
-    ctx.fillStyle = '#ffaa00';
-    ctx.fillRect(-10, 30, 8, 15 + Math.sin(gameTime)*5);
-    ctx.fillRect(2, 30, 8, 15 + Math.sin(gameTime)*5);
-    ctx.fillStyle = g.color;
-    ctx.fillRect(-12, -30, 24, 20);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(-15, -38, 30, 10);
-    ctx.restore();
-  });
-}
-
-function drawTransitionOverlay() {
-  ctx.fillStyle = 'rgba(0,0,0,0.7)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#ffe066';
-  ctx.font = '900 24px Cairo';
-  ctx.textAlign = 'center';
-  ctx.fillText("⚡ " + transitionText + " ⚡", 480, 270);
-}
-
-// Final Ending Cutscene
-function drawEndingCutscene() {
-  endTimer++;
-
-  if (endTimer < 250) {
-    ctx.fillStyle = '#e8d5c4';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.save();
-    ctx.filter = 'blur(12px)';
-    ctx.fillStyle = '#3a5a80';
-    ctx.beginPath(); ctx.arc(360, 220, 70, 0, Math.PI*2); ctx.fill();
-    ctx.fillRect(290, 280, 140, 200);
-
-    ctx.fillStyle = '#c86b85';
-    ctx.beginPath(); ctx.arc(600, 240, 65, 0, Math.PI*2); ctx.fill();
-    ctx.fillRect(535, 300, 130, 200);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.beginPath(); ctx.arc(360, 240, 20, 0, Math.PI); ctx.fill();
-    ctx.beginPath(); ctx.arc(600, 255, 18, 0, Math.PI); ctx.fill();
-    ctx.restore();
-
-    let eyeOpen = Math.min(1, endTimer / 150);
-    let lidHeight = (1 - eyeOpen) * (canvas.height / 2);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, lidHeight);
-    ctx.fillRect(0, canvas.height - lidHeight, canvas.width, lidHeight);
-
-    ctx.fillStyle = '#fff';
-    ctx.font = '900 22px Cairo';
-    ctx.textAlign = 'center';
-    ctx.fillText("فتحت عينيك على العالم... أمك وأبوك يبتسمان لك 👶", 480, 500);
+    ctx.strokeStyle = 'rgba(255, 224, 102, 0.4)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(480, 270, 30, 0, Math.PI*2); ctx.stroke();
   }
-  else if (endTimer < 500) {
-    ctx.fillStyle = '#1b1340';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    let progress = (endTimer - 250) / 250;
-    let years = Math.floor(progress * 14) + 1;
+  // Implantation View
+  if (gameState === 2) {
+    ctx.fillStyle = '#2b091e'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#6b173e'; ctx.fillRect(0, 0, canvas.width, 160);
+
+    let spotGrad = ctx.createRadialGradient(targetWall.x, targetWall.y, 5, targetWall.x, targetWall.y, targetWall.radius);
+    spotGrad.addColorStop(0, '#ffe066');
+    spotGrad.addColorStop(1, 'rgba(0,255,150,0.2)');
+    ctx.fillStyle = spotGrad;
+    ctx.beginPath(); ctx.arc(targetWall.x, targetWall.y, targetWall.radius, 0, Math.PI*2); ctx.fill();
 
     ctx.fillStyle = '#ffe066';
-    ctx.font = '900 32px Cairo';
-    ctx.textAlign = 'center';
-    ctx.fillText(`تمر السنوات... العمر: ${years} سنة`, 480, 100);
+    ctx.beginPath(); ctx.arc(camera.x, camera.y, 16, 0, Math.PI*2); ctx.fill();
+  }
 
-    ctx.fillStyle = '#ff8fc7';
-    ctx.fillRect(460, 360 - years * 8, 40, years * 8);
-    ctx.fillStyle = '#7ad7ff';
-    ctx.fillRect(380, 200, 50, 160);
-    ctx.fillRect(530, 220, 45, 140);
+  // Fetal Growth Stage (Collecting Hearts inside Uterus)
+  if (gameState === 3) {
+    ctx.fillStyle = '#1f0718'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Render Hearts
+    hearts.forEach(h => {
+      ctx.save();
+      ctx.translate(h.x, h.y);
+      let scale = 1 + Math.sin(h.pulse) * 0.15;
+      ctx.scale(scale, scale);
+      ctx.fillStyle = '#ff4d8d';
+      ctx.beginPath();
+      ctx.arc(-6, -6, 8, Math.PI, 0);
+      ctx.arc(6, -6, 8, Math.PI, 0);
+      ctx.lineTo(0, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    });
+
+    // Fetus Glow Representation
+    ctx.fillStyle = '#ffe066';
+    ctx.beginPath(); ctx.arc(camera.x, camera.y, 22, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#ff73c5'; ctx.lineWidth = 4; ctx.stroke();
+  }
+
+  // 🎬 90-SECOND SHORT FILM
+  if (gameState === 4) {
+    endTimer++;
+    drawShortFilm(endTimer);
+  }
+}
+
+function drawShortFilm(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (t < 1200) {
+    ctx.fillStyle = '#fceade'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    draw2DParent(320, 200, '#385a7c', '#f0c8a0', true);
+    draw2DParent(640, 210, '#c45b78', '#f0c8a0', false);
+
+    let open = Math.min(1, t / 400);
+    let lid = (1 - open) * (canvas.height / 2);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, lid);
+    ctx.fillRect(0, canvas.height - lid, canvas.width, lid);
+  }
+  else if (t < 2700) {
+    ctx.fillStyle = '#eaf7ff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#7bc676'; ctx.fillRect(0, 420, canvas.width, 120);
+
+    let progress = (t - 1200) / 1500;
+    let babyX = 200 + progress * 200;
+
+    draw2DParent(650, 280, '#c45b78', '#f0c8a0', false);
+    draw2DParent(730, 270, '#385a7c', '#f0c8a0', true);
+    draw2DChild(babyX, 360, Math.sin(t * 0.1) * 10);
+  }
+  else if (t < 3900) {
+    ctx.fillStyle = '#1c1836'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    draw2DGrownTeen(480, 240);
   }
   else {
-    ctx.fillStyle = '#090514';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#0a0518'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = '#1c1236';
-    for(let i=0; i<5; i++) {
-      ctx.fillRect(0, 100 + i*40, canvas.width, 30);
-    }
+    ctx.fillStyle = '#1a1333';
+    for(let i=0; i<4; i++) ctx.fillRect(0, 120 + i*45, canvas.width, 35);
 
-    let spotGrad = ctx.createRadialGradient(480, 180, 10, 480, 180, 180);
-    spotGrad.addColorStop(0, 'rgba(255, 255, 200, 0.9)');
-    spotGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = spotGrad;
-    ctx.beginPath(); ctx.arc(480, 180, 180, 0, Math.PI*2); ctx.fill();
+    let spot = ctx.createRadialGradient(480, 180, 20, 480, 180, 200);
+    spot.addColorStop(0, 'rgba(255, 235, 150, 0.95)');
+    spot.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = spot;
+    ctx.beginPath(); ctx.arc(480, 180, 200, 0, Math.PI*2); ctx.fill();
 
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(440, 140, 25, 60);
-    ctx.fillRect(495, 145, 22, 55);
+    draw2DParent(440, 120, '#385a7c', '#f0c8a0', true, true);
+    draw2DParent(520, 125, '#c45b78', '#f0c8a0', false, true);
+    draw2DGrownTeen(480, 360);
 
-    let clap = Math.sin(gameTime * 0.3) * 8;
-    ctx.fillRect(430 - clap, 155, 12, 6);
-    ctx.fillRect(520 + clap, 160, 12, 6);
-
-    ctx.fillStyle = '#ff4d8d';
-    ctx.fillRect(465, 380, 30, 90);
-
-    ctx.fillStyle = '#ffe066';
-    ctx.font = '900 20px Cairo';
-    ctx.textAlign = 'center';
-    ctx.fillText("في زحمة المراهقة والإنجازات... تشعر أنك غير مرئي،", 480, 490);
-    ctx.fillText("لكنك عندما تنظر للمدرجات، تجد نور أمك وأبيك واقفين يصفقون لك فخراً! ❤️", 480, 520);
-
-    if (endTimer > 650) {
+    if (t > 5200) {
       document.getElementById('end-screen').style.display = 'flex';
     }
   }
 }
 
-// Loop
-function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
+function draw2DParent(x, y, shirtColor, skinColor, isDad, isClapping=false) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  ctx.fillStyle = skinColor;
+  ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = isDad ? '#3d2314' : '#5a2d0c';
+  ctx.beginPath(); ctx.arc(0, -5, 26, Math.PI, Math.PI*2); ctx.fill();
+
+  ctx.strokeStyle = '#804020'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 4, 10, 0, Math.PI); ctx.stroke();
+
+  ctx.fillStyle = '#402010';
+  ctx.beginPath(); ctx.arc(-8, -2, 3, 0, Math.PI*2); ctx.arc(8, -2, 3, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = shirtColor;
+  ctx.beginPath(); ctx.roundRect(-22, 24, 44, 70, 10); ctx.fill();
+
+  ctx.strokeStyle = skinColor; ctx.lineWidth = 8;
+  if (isClapping) {
+    let armMove = Math.sin(gameTime * 0.3) * 10;
+    ctx.beginPath(); ctx.moveTo(-20, 30); ctx.lineTo(-5 + armMove, 15); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(20, 30); ctx.lineTo(5 - armMove, 15); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(-20, 30); ctx.lineTo(-30, 70); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(20, 30); ctx.lineTo(30, 70); ctx.stroke();
+  }
+
+  ctx.restore();
 }
+
+function draw2DChild(x, y, legOffset) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  ctx.fillStyle = '#f0c8a0';
+  ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.arc(-5, -1, 2, 0, Math.PI*2); ctx.arc(5, -1, 2, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = '#ff8fc7';
+  ctx.beginPath(); ctx.roundRect(-12, 16, 24, 35, 6); ctx.fill();
+
+  ctx.strokeStyle = '#f0c8a0'; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(-6, 50); ctx.lineTo(-6 + legOffset, 70); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(6, 50); ctx.lineTo(6 - legOffset, 70); ctx.stroke();
+
+  ctx.restore();
+}
+
+function draw2DGrownTeen(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  ctx.fillStyle = '#f0c8a0';
+  ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = '#111';
+  ctx.fillRect(-25, -28, 50, 8);
+  ctx.fillRect(-12, -40, 24, 12);
+
+  ctx.fillStyle = '#ff4d8d';
+  ctx.beginPath(); ctx.roundRect(-20, 22, 40, 80, 8); ctx.fill();
+
+  ctx.restore();
+}
+
+function loop() { update(); draw(); requestAnimationFrame(loop); }
 loop();
 </script>
 </body>
