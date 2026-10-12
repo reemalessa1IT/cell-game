@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>رحلة الحياة - حركة سلسة وأجسام واضحة</title>
+<title>رحلة الحياة - حركة واضحة وسلسة</title>
 <style>
 :root {
   --bg: #05020d;
@@ -30,7 +30,7 @@ html, body {
   overflow: hidden;
   background: #000;
 }
-canvas { width: 100%; height: 100%; display: block; image-rendering: crisp-edges; }
+canvas { width: 100%; height: 100%; display: block; }
 .overlay {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
@@ -82,7 +82,7 @@ button.btn:active { transform: scale(0.95); }
 
   <div id="start-screen" class="overlay">
     <div class="title">رحلة الحياة السينمائية 🎬</div>
-    <div class="subtitle">تحكم بسلاسة فائقة وجرافيك واضح! مر بعقبات قناة فالوب، انغرس في الرحم، واجمع القلوب لنشاهد الفيلم الختامي!</div>
+    <div class="subtitle">حركة واضحة ورؤية مكشوفة بالكامل للأمام! وجه مسارك لمراوغة القنابل والانغراس في الرحم وصولاً للفيلم الختامي.</div>
     <input id="nin" maxlength="20" placeholder="أدخل اسمك الكريم" value="بطل الرحلة">
     <button class="btn" onclick="startFlow()">ابدأ الرحلة السينمائية</button>
   </div>
@@ -106,12 +106,16 @@ const ctx = canvas.getContext('2d');
 let gameState = 0; // 0: Menu, 1: Tunnel, 2: Implantation, 3: Hearts, 4: Film, 5: GameOver
 let score = 0, heartsScore = 0, stage = 1, gameTime = 0;
 
-// High Precision Smooth Camera / Reticle
-const cam = { x: 480, y: 270, tx: 480, ty: 270, vx: 0, vy: 0 };
+// Ship / Reticle Controls (Clear View)
+const player = { x: 480, y: 270, tx: 480, ty: 270 };
 let tunnelOffset = 0;
 
-let obstacles = [], hearts = [], particles = [], endTimer = 0;
-let targetWall = { x: 480, y: 130, radius: 55 };
+let obstacles = [], hearts = [], speedLines = [], endTimer = 0;
+let targetWall = { x: 480, y: 130, radius: 60 };
+
+for(let i=0; i<30; i++) {
+  speedLines.push({ x: Math.random() * 960, y: Math.random() * 540, z: Math.random() * 1000 });
+}
 
 function startFlow() {
   document.getElementById('start-screen').style.display = 'none';
@@ -122,54 +126,52 @@ function startFlow() {
 function restartFlow() {
   document.getElementById('fail-screen').style.display = 'none';
   document.getElementById('hud').style.display = 'flex';
-  cam.x = 480; cam.y = 270; cam.tx = 480; cam.ty = 270;
+  player.x = 480; player.y = 270; player.tx = 480; player.ty = 270;
   score = 0; heartsScore = 0; stage = 1; obstacles = []; hearts = [];
   gameState = 1;
 }
 
-// Smooth Pointer Listener
+// Smooth Touch / Pointer Control
 canvas.addEventListener('pointermove', (e) => {
   const rect = canvas.getBoundingClientRect();
-  cam.tx = (e.clientX - rect.left) * (canvas.width / rect.width);
-  cam.ty = (e.clientY - rect.top) * (canvas.height / rect.height);
+  player.tx = (e.clientX - rect.left) * (canvas.width / rect.width);
+  player.ty = (e.clientY - rect.top) * (canvas.height / rect.height);
 });
 
-// Main Update Engine (60 FPS Smooth)
 function update() {
   gameTime++;
 
-  // Smooth Interpolation (Physics Damping)
-  cam.x += (cam.tx - cam.x) * 0.22;
-  cam.y += (cam.ty - cam.y) * 0.22;
+  // Smooth Movement
+  player.x += (player.tx - player.x) * 0.2;
+  player.y += (player.ty - player.y) * 0.2;
 
   if (gameState === 1) {
     score++;
     document.getElementById('score-txt').innerText = `المسافة: ${Math.floor(score/10)}m`;
     tunnelOffset += 0.05;
 
-    const cx = 480 + Math.sin(tunnelOffset) * 100;
-    const cy = 270;
-
-    // Spawn Vivid Obstacles
-    if (gameTime % Math.max(14, 38 - stage * 7) === 0) {
-      const type = Math.random() > 0.45 ? 'bomb' : 'monster';
+    // Spawn Clear Obstacles from Distance
+    if (gameTime % Math.max(15, 38 - stage * 6) === 0) {
+      const type = Math.random() > 0.4 ? 'bomb' : 'monster';
       const angle = Math.random() * Math.PI * 2;
-      const dist = Math.random() * 160;
+      const dist = Math.random() * 180;
       obstacles.push({
-        x: cx + Math.cos(angle) * dist,
-        y: cy + Math.sin(angle) * dist,
-        z: 1000, type, radius: type === 'bomb' ? 26 : 32, rot: 0
+        x: 480 + Math.cos(angle) * dist,
+        y: 270 + Math.sin(angle) * dist,
+        z: 1000, type, radius: type === 'bomb' ? 24 : 30, rot: 0
       });
     }
 
     for (let i = obstacles.length - 1; i >= 0; i--) {
       let ob = obstacles[i];
-      ob.z -= 22 + stage * 4;
+      ob.z -= 20 + stage * 4;
       ob.rot += 0.04;
 
-      // Accurate Collision Check
-      if (ob.z < 70 && ob.z > 0) {
-        if (Math.hypot(cam.x - ob.x, cam.y - ob.y) < ob.radius + 18) {
+      // Check Collision with Player Position
+      if (ob.z < 80 && ob.z > 0) {
+        let dx = (ob.x - 480) * (400 / ob.z) + 480;
+        let dy = (ob.y - 270) * (400 / ob.z) + 270;
+        if (Math.hypot(player.x - dx, player.y - dy) < ob.radius + 15) {
           gameState = 5;
           document.getElementById('hud').style.display = 'none';
           document.getElementById('fail-screen').style.display = 'flex';
@@ -181,14 +183,14 @@ function update() {
     if (score === 450 && stage === 1) {
       stage = 2;
       document.getElementById('stage-txt').innerText = "المرحلة 2: الانقسامات الخلوية المتتابعة";
-    } else if (score >= 1000 && stage === 2) {
+    } else if (score >= 950 && stage === 2) {
       gameState = 2;
       document.getElementById('stage-txt').innerText = "المرحلة 3: التثبيت والانغراس في الجدار الصحيح!";
     }
   }
 
   if (gameState === 2) {
-    let dist = Math.hypot(cam.x - targetWall.x, cam.y - targetWall.y);
+    let dist = Math.hypot(player.x - targetWall.x, player.y - targetWall.y);
     if (dist < targetWall.radius) {
       gameState = 3;
       obstacles = [];
@@ -198,7 +200,7 @@ function update() {
   }
 
   if (gameState === 3) {
-    if (gameTime % 18 === 0) {
+    if (gameTime % 20 === 0) {
       hearts.push({
         x: Math.random() * 840 + 60,
         y: Math.random() * 420 + 60,
@@ -209,7 +211,7 @@ function update() {
     for (let i = hearts.length - 1; i >= 0; i--) {
       let h = hearts[i];
       h.pulse += 0.12;
-      if (Math.hypot(cam.x - h.x, cam.y - h.y) < h.size + 24) {
+      if (Math.hypot(player.x - h.x, player.y - h.y) < h.size + 20) {
         heartsScore += 10;
         document.getElementById('score-txt').innerText = `النقاط: ${heartsScore} ❤️`;
         hearts.splice(i, 1);
@@ -217,7 +219,7 @@ function update() {
     }
 
     if (heartsScore < 50) document.getElementById('stage-txt').innerText = "نمو الجنين: الأسبوع 4 (تكون المضغة)";
-    else if (heartsScore < 120) document.getElementById('stage-txt').innerText = "نمو الجنين: الأسبوع 12 (بداية تشكل الوجه والأطراف)";
+    else if (heartsScore < 120) document.getElementById('stage-txt').innerText = "نمو الجنين: الأسبوع 12 (تشكل الوجه والأطراف)";
     else if (heartsScore < 200) document.getElementById('stage-txt').innerText = "نمو الجنين: الأسبوع 20 (نبضات القلب القوية)";
     else if (heartsScore >= 260) {
       document.getElementById('stage-txt').innerText = "نمو الجنين: الأسبوع 36 (اكتمل النمو تماماً 🎉)";
@@ -231,33 +233,33 @@ function update() {
   }
 }
 
-// Crisp & High Contrast Graphics Render
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (gameState === 1) {
-    const cx = 480 + Math.sin(tunnelOffset) * 100;
-    
-    // High Contrast Tunnel Background
-    let grad = ctx.createRadialGradient(cx, 270, 10, cx, 270, 520);
-    grad.addColorStop(0, '#4a0e35');
-    grad.addColorStop(0.5, '#1e051a');
+    // Tunnel Background
+    let grad = ctx.createRadialGradient(480, 270, 10, 480, 270, 500);
+    grad.addColorStop(0, '#3d0a2b');
+    grad.addColorStop(0.6, '#180313');
     grad.addColorStop(1, '#05020d');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Tunnel Rings
-    for (let r = 500; r > 20; r -= 45) {
+    // Speed Lines
+    ctx.strokeStyle = 'rgba(255, 200, 230, 0.2)';
+    speedLines.forEach(l => {
+      l.z -= 25; if (l.z <= 0) l.z = 1000;
+      let sc = 400 / l.z;
       ctx.beginPath();
-      ctx.arc(cx, 270, r, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(255, 51, 119, ${r/800})`;
-      ctx.lineWidth = 4; ctx.stroke();
-    }
+      ctx.moveTo((l.x - 480)*sc + 480, (l.y - 270)*sc + 270);
+      ctx.lineTo((l.x - 480)*(sc*1.2) + 480, (l.y - 270)*(sc*1.2) + 270);
+      ctx.stroke();
+    });
 
-    // Render Vivid Obstacles
+    // Draw Clear Obstacles
     obstacles.forEach(ob => {
-      let scale = 420 / ob.z;
-      let sx = (ob.x - cam.x) * scale + 480;
-      let sy = (ob.y - cam.y) * scale + 270;
+      let scale = 400 / ob.z;
+      let sx = (ob.x - 480) * scale + 480;
+      let sy = (ob.y - 270) * scale + 270;
       let sz = ob.radius * scale;
 
       if (sz > 1) {
@@ -266,51 +268,45 @@ function draw() {
         ctx.rotate(ob.rot);
 
         if (ob.type === 'bomb') {
-          // Sharp Vivid Red Bomb
+          // Sharp Red Bomb with White Outline
           ctx.fillStyle = '#ff1a1a';
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 3 * scale;
+          ctx.lineWidth = 3;
           ctx.beginPath(); ctx.arc(0, 0, sz, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-
           // Spikes
           ctx.fillStyle = '#ffcc00';
           for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
-            ctx.beginPath();
-            ctx.arc(Math.cos(a) * sz, Math.sin(a) * sz, 5 * scale, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(Math.cos(a) * sz, Math.sin(a) * sz, 4 * scale, 0, Math.PI * 2); ctx.fill();
           }
         } else {
-          // Sharp Purple Monster
-          ctx.fillStyle = '#aa00ff';
+          // Purple Monster with Glowing Outline
+          ctx.fillStyle = '#a800ff';
           ctx.strokeStyle = '#00ffff';
-          ctx.lineWidth = 3 * scale;
+          ctx.lineWidth = 3;
           ctx.beginPath(); ctx.arc(0, 0, sz, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-
-          // Glowing Eyes
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath(); ctx.arc(-sz*0.3, -sz*0.2, sz*0.25, 0, Math.PI*2); ctx.fill();
-          ctx.beginPath(); ctx.arc(sz*0.3, -sz*0.2, sz*0.25, 0, Math.PI*2); ctx.fill();
         }
         ctx.restore();
       }
     });
 
-    // Sharp Pointer Aura (Player IS Cell)
+    // Clear Crosshair/Pointer (NO YELLOW BLOB BLOCKING VISION)
     ctx.strokeStyle = '#ffcc00';
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(480, 270, 26, 0, Math.PI*2); ctx.stroke();
-    ctx.fillStyle = 'rgba(255, 204, 0, 0.3)';
-    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, 16, 0, Math.PI * 2);
+    ctx.stroke();
+    // Cross lines
+    ctx.beginPath();
+    ctx.moveTo(player.x - 8, player.y); ctx.lineTo(player.x + 8, player.y);
+    ctx.moveTo(player.x, player.y - 8); ctx.lineTo(player.x, player.y + 8);
+    ctx.stroke();
   }
 
   // Implantation View
   if (gameState === 2) {
     ctx.fillStyle = '#1f0315'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#7a1443'; ctx.fillRect(0, 0, canvas.width, 160);
 
-    // Wall
-    ctx.fillStyle = '#7a1443'; ctx.fillRect(0, 0, canvas.width, 170);
-
-    // Spot
     let spotGrad = ctx.createRadialGradient(targetWall.x, targetWall.y, 5, targetWall.x, targetWall.y, targetWall.radius);
     spotGrad.addColorStop(0, '#ffcc00');
     spotGrad.addColorStop(1, 'rgba(0,255,170,0.3)');
@@ -318,12 +314,12 @@ function draw() {
     ctx.beginPath(); ctx.arc(targetWall.x, targetWall.y, targetWall.radius, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.stroke();
 
-    // Player Pointer Cell
-    ctx.fillStyle = '#ffcc00';
-    ctx.beginPath(); ctx.arc(cam.x, cam.y, 18, 0, Math.PI*2); ctx.fill();
+    // Clear Reticle
+    ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(player.x, player.y, 16, 0, Math.PI*2); ctx.stroke();
   }
 
-  // Hearts Stage
+  // Collecting Hearts Stage
   if (gameState === 3) {
     ctx.fillStyle = '#140210'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -333,7 +329,6 @@ function draw() {
       let sc = 1 + Math.sin(h.pulse) * 0.2;
       ctx.scale(sc, sc);
 
-      // Vivid Glowing Heart
       ctx.fillStyle = '#ff0066';
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
@@ -346,20 +341,19 @@ function draw() {
       ctx.restore();
     });
 
-    // Fetus Glow
-    ctx.fillStyle = '#ffcc00';
-    ctx.beginPath(); ctx.arc(cam.x, cam.y, 22, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = '#ff3388'; ctx.lineWidth = 4; ctx.stroke();
+    // Fetus Light Reticle
+    ctx.strokeStyle = '#ff3388'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(player.x, player.y, 20, 0, Math.PI*2); ctx.stroke();
   }
 
-  // Film Stage (2D Crisp Animated Short)
+  // 🎬 Film Stage
   if (gameState === 4) {
     endTimer++;
     drawShortFilm(endTimer);
   }
 }
 
-// Crisp 2D Film Render
+// 2D Film Render
 function drawShortFilm(t) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
