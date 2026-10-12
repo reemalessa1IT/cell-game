@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>رحلة الخلية - الكرتونية</title>
+<title>رحلتك بعلم الأجنة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #1a0523;
+  --bg: #12041d;
   --fg: #ffffff;
 }
 html, body {
@@ -28,7 +28,7 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle, #4a0e4e 0%, #1a0523 100%);
+  background: radial-gradient(circle, #3b0944 0%, #12041d 100%);
 }
 canvas {
   display: block;
@@ -46,7 +46,7 @@ canvas {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 15px;
+  padding: 20px;
   box-sizing: border-box;
 }
 .top-bar {
@@ -56,10 +56,10 @@ canvas {
   pointer-events: auto;
 }
 .title {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 900;
   color: #ffde59;
-  text-shadow: 3px 3px 0 #ff3366, 5px 5px 0 #000;
+  text-shadow: 2px 2px 0 #ff3366;
 }
 .btn-group {
   display: flex;
@@ -68,26 +68,27 @@ canvas {
 button {
   background: #ff3366;
   border: 3px solid #fff;
-  border-radius: 12px;
+  border-radius: 14px;
   color: #fff;
   font-family: 'Cairo', sans-serif;
   font-weight: 900;
-  font-size: 16px;
-  padding: 8px 16px;
+  font-size: 18px;
+  padding: 10px 24px;
   cursor: pointer;
-  box-shadow: 0 4px 0 #990033;
+  box-shadow: 0 5px 0 #990033;
   transition: all 0.1s ease;
   pointer-events: auto;
 }
 button:active {
   transform: translateY(4px);
-  box-shadow: 0 0 0 #990033;
+  box-shadow: 0 1px 0 #990033;
 }
-/* شاشات الحوار والاختيار */
+
+/* الشاشات التفاعلية */
 .overlay {
   position: absolute;
   inset: 0;
-  background: rgba(20, 5, 30, 0.85);
+  background: rgba(15, 3, 25, 0.92);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -95,42 +96,32 @@ button:active {
   gap: 20px;
   z-index: 10;
   pointer-events: auto;
-  backdrop-filter: blur(5px);
+  text-align: center;
+  padding: 20px;
 }
 .overlay h1 {
-  font-size: 36px;
+  font-size: 38px;
   color: #ffde59;
   text-shadow: 3px 3px 0 #ff3366;
   margin: 0;
 }
-.char-select {
-  display: flex;
-  gap: 30px;
-}
-.char-card {
-  background: #2a0835;
-  border: 4px solid #ff3366;
-  border-radius: 20px;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
-}
-.char-card:hover {
-  transform: scale(1.08);
-  border-color: #ffde59;
-}
-.char-card canvas {
-  width: 100px;
-  height: 100px;
-}
-.char-card span {
+.overlay p {
   font-size: 20px;
-  font-weight: 900;
-  color: #fff;
+  color: #e2d8f0;
+  max-width: 500px;
+  line-height: 1.6;
+  margin: 0;
+}
+.jetpack-chars {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0;
+}
+.jetpack-chars canvas {
+  width: 130px;
+  height: 130px;
 }
 </style>
 </head>
@@ -139,37 +130,40 @@ button:active {
 <div id="game-container">
   <canvas id="c"></canvas>
   
+  <!-- واجهة أزرار التحكم العليا -->
   <div class="ui-layer">
     <div class="top-bar">
       <div class="title">رحلة الخلية 🧬</div>
       <div class="btn-group">
         <button id="pBtn">إيقاف</button>
-        <button id="rBtn">إعادة</button>
         <button id="mBtn">الصوت: مفعل</button>
       </div>
     </div>
   </div>
 
-  <!-- شاشة اختيار الشخصية -->
-  <div id="charOverlay" class="overlay">
-    <h1>اختر شخصيتك للبدء!</h1>
-    <div class="char-select">
-      <div class="char-card" id="selectBoy">
-        <canvas id="boyPreview" width="100" height="100"></canvas>
-        <span>الولد (سامي)</span>
-      </div>
-      <div class="char-card" id="selectGirl">
-        <canvas id="girlPreview" width="100" height="100"></canvas>
-        <span>البنت (سارة)</span>
-      </div>
-    </div>
+  <!-- 1. الشاشة الأولى: ابدأ رحلتك بعلم الأجنة -->
+  <div id="startOverlay" class="overlay">
+    <h1>ابدأ رحلتك بعلم الأجنة</h1>
+    <p>استكشف عالم الخلايا المجهري وتخطَّ العقبات بنجاح!</p>
+    <button id="startBtn" style="font-size: 26px; padding: 12px 40px;">ابدأ</button>
   </div>
 
-  <!-- شاشة الخسارة -->
+  <!-- 2. الشاشة الثانية: الشخصيات الكرتونية بالحقائب النفاثة والقبعات البيضاء تحذرك -->
+  <div id="warningOverlay" class="overlay" style="display: none;">
+    <h1>تحذير من الفريق الطبي! ⚠️</h1>
+    <div class="jetpack-chars">
+      <canvas id="char1Canvas" width="130" height="130"></canvas>
+      <canvas id="char2Canvas" width="130" height="130"></canvas>
+    </div>
+    <p>انتبه! الطريق مليء بالفيروسات والعقبات الخلوية.<br>اقفز لتفاديها واجمع جزيئات الطاقة للوصول بأمان!</p>
+    <button id="goGameBtn" style="font-size: 24px; padding: 10px 35px; background: #00b894; box-shadow: 0 5px 0 #006b54;">انطلق الآن! 🚀</button>
+  </div>
+
+  <!-- 3. شاشة الخسارة -->
   <div id="gameOverOverlay" class="overlay" style="display: none;">
-    <h1 id="goTitle">انتهت المحاولة!</h1>
-    <p id="goScore" style="font-size: 24px; color: #fff; margin:0;"></p>
-    <button id="restartBtn" style="font-size: 22px; padding: 10px 30px;">اللعب مجدداً</button>
+    <h1 id="goTitle">انتهت الرحلة!</h1>
+    <p id="goScore" style="font-size: 24px; color: #ffde59;"></p>
+    <button id="restartBtn" style="font-size: 22px; padding: 10px 30px;">إعادة المحاولة 🔄</button>
   </div>
 </div>
 
@@ -177,310 +171,15 @@ button:active {
 const cv = document.getElementById('c');
 const g = cv.getContext('2d');
 
-let W = window.innerWidth;
-let H = window.innerHeight;
+let W = cv.width = window.innerWidth;
+let H = cv.height = window.innerHeight;
 
-function resize() {
+window.addEventListener('resize', () => {
   W = cv.width = window.innerWidth;
   H = cv.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-resize();
+});
 
-// إعداد الصوت
+// أصوات اللعبة
 let mute = false;
 let AC = null;
-function beep(f, d, ty, v) {
-  if (mute) return;
-  try {
-    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-    const o = AC.createOscillator(), n = AC.createGain(), a = AC.currentTime;
-    o.type = ty || 'square';
-    o.frequency.value = f;
-    n.gain.setValueAtTime(v || .05, a);
-    n.gain.exponentialRampToValueAtTime(.001, a + d);
-    o.connect(n);
-    n.connect(AC.destination);
-    o.start();
-    o.stop(a + d);
-  } catch (e) {}
-}
-
-// عناصر اللعبة
-let selectedChar = 'boy'; // 'boy' or 'girl'
-let isPaused = false;
-let isGameOver = false;
-let gameStarted = false;
-let score = 0;
-let lives = 3;
-let frameCount = 0;
-
-// أرضية ومستوى الخلية
-const groundY = () => H * 0.75;
-
-// اللاعب
-const player = {
-  x: 100,
-  y: 0,
-  w: 50,
-  h: 70,
-  vy: 0,
-  gravity: 0.7,
-  jumpPower: -14,
-  isGrounded: false,
-  animFrame: 0
-};
-
-// العقبات والمكافآت
-let obstacles = [];
-let collectibles = [];
-let particles = [];
-
-// رسم شخصية الولد
-function drawBoy(ctx, x, y, w, h, frame) {
-  ctx.save();
-  ctx.translate(x + w/2, y + h/2);
-  
-  let legAngle = Math.sin(frame * 0.2) * 0.4;
-  
-  // الأرجل
-  ctx.strokeStyle = '#2980b9';
-  ctx.lineWidth = 8;
-  ctx.lineCap = 'round';
-  // رجل 1
-  ctx.beginPath();
-  ctx.moveTo(-8, 15);
-  ctx.lineTo(-8 + Math.sin(legAngle)*10, 30);
-  ctx.stroke();
-  // رجل 2
-  ctx.beginPath();
-  ctx.moveTo(8, 15);
-  ctx.lineTo(8 - Math.sin(legAngle)*10, 30);
-  ctx.stroke();
-
-  // الجسم
-  ctx.fillStyle = '#3498db';
-  ctx.beginPath();
-  ctx.roundRect(-15, -10, 30, 28, 8);
-  ctx.fill();
-
-  // الرأس
-  ctx.fillStyle = '#f1c40f'; // شعر
-  ctx.beginPath();
-  ctx.arc(0, -22, 18, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#ffcc99'; // وجه
-  ctx.beginPath();
-  ctx.arc(0, -20, 15, 0, Math.PI * 2);
-  ctx.fill();
-
-  // العينين
-  ctx.fillStyle = '#000';
-  ctx.beginPath();
-  ctx.arc(5, -22, 2.5, 0, Math.PI * 2);
-  ctx.arc(11, -22, 2.5, 0, Math.PI * 2);
-  ctx.fill();
-
-  // الابتسامة
-  ctx.beginPath();
-  ctx.arc(7, -16, 4, 0, Math.PI);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-// رسم شخصية البنت
-function drawGirl(ctx, x, y, w, h, frame) {
-  ctx.save();
-  ctx.translate(x + w/2, y + h/2);
-  
-  let legAngle = Math.sin(frame * 0.2) * 0.4;
-  
-  // الأرجل
-  ctx.strokeStyle = '#e74c3c';
-  ctx.lineWidth = 8;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(-8, 15);
-  ctx.lineTo(-8 + Math.sin(legAngle)*10, 30);
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(8, 15);
-  ctx.lineTo(8 - Math.sin(legAngle)*10, 30);
-  ctx.stroke();
-
-  // الفستان
-  ctx.fillStyle = '#e84393';
-  ctx.beginPath();
-  ctx.moveTo(-15, 15);
-  ctx.lineTo(15, 15);
-  ctx.lineTo(8, -10);
-  ctx.lineTo(-8, -10);
-  ctx.closePath();
-  ctx.fill();
-
-  // الشعر الطويل من الخلف
-  ctx.fillStyle = '#6c5ce7';
-  ctx.beginPath();
-  ctx.arc(-5, -20, 20, 0, Math.PI * 2);
-  ctx.fill();
-
-  // الوجه
-  ctx.fillStyle = '#ffcc99';
-  ctx.beginPath();
-  ctx.arc(0, -20, 15, 0, Math.PI * 2);
-  ctx.fill();
-
-  // العيون
-  ctx.fillStyle = '#000';
-  ctx.beginPath();
-  ctx.arc(5, -22, 2.5, 0, Math.PI * 2);
-  ctx.arc(11, -22, 2.5, 0, Math.PI * 2);
-  ctx.fill();
-
-  // فيونكة شعر
-  ctx.fillStyle = '#fdcb6e';
-  ctx.beginPath();
-  ctx.arc(-10, -32, 5, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-// رسم المعاينات لشاشة الاختيار
-function drawPreviews() {
-  const bCv = document.getElementById('boyPreview');
-  const bCtx = bCv.getContext('2d');
-  bCtx.clearRect(0,0,100,100);
-  drawBoy(bCtx, 25, 15, 50, 70, 0);
-
-  const gCv = document.getElementById('girlPreview');
-  const gCtx = gCv.getContext('2d');
-  gCtx.clearRect(0,0,100,100);
-  drawGirl(gCtx, 25, 15, 50, 70, 0);
-}
-drawPreviews();
-
-// اختيار الشخصية وبدء اللعبة
-document.getElementById('selectBoy').onclick = () => startGame('boy');
-document.getElementById('selectGirl').onclick = () => startGame('girl');
-
-function startGame(char) {
-  selectedChar = char;
-  document.getElementById('charOverlay').style.display = 'none';
-  document.getElementById('gameOverOverlay').style.display = 'none';
-  resetGame();
-  gameStarted = true;
-}
-
-function resetGame() {
-  score = 0;
-  lives = 3;
-  isGameOver = false;
-  isPaused = false;
-  player.y = groundY() - player.h;
-  player.vy = 0;
-  
-  // تفريغ العقبات والبدء بعقبات بعيدة لضمان عدم الخسارة في البداية
-  obstacles = [];
-  collectibles = [];
-  particles = [];
-  
-  // إضافة عقبة بعد مسافة أمان كافية (مثلاً بعد عرض الشاشة بالكامل)
-  obstacles.push({
-    x: W + 300,
-    y: groundY() - 40,
-    w: 40,
-    h: 40,
-    type: 'virus'
-  });
-
-  // إضافة مكافأة الطاقة
-  collectibles.push({
-    x: W + 150,
-    y: groundY() - 100,
-    r: 15,
-    collected: false
-  });
-}
-
-// عناصر التحكم
-function jump() {
-  if (player.isGrounded && !isPaused && !isGameOver && gameStarted) {
-    player.vy = player.jumpPower;
-    player.isGrounded = false;
-    beep(400, 0.1, 'sine', 0.1);
-  }
-}
-
-window.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' || e.code === 'ArrowUp') jump();
-});
-window.addEventListener('touchstart', jump);
-window.addEventListener('mousedown', jump);
-
-document.getElementById('pBtn').onclick = (e) => {
-  e.stopPropagation();
-  if (!gameStarted) return;
-  isPaused = !isPaused;
-  document.getElementById('pBtn').innerText = isPaused ? 'استئناف' : 'إيقاف';
-};
-
-document.getElementById('rBtn').onclick = (e) => {
-  e.stopPropagation();
-  if (!gameStarted) return;
-  resetGame();
-};
-
-document.getElementById('mBtn').onclick = (e) => {
-  e.stopPropagation();
-  mute = !mute;
-  document.getElementById('mBtn').innerText = mute ? 'الصوت: مكتوم' : 'الصوت: مفعل';
-};
-
-document.getElementById('restartBtn').onclick = () => {
-  document.getElementById('gameOverOverlay').style.display = 'none';
-  resetGame();
-};
-
-// خلفية المنظور المجهري داخل الخلية
-function drawCellBackground() {
-  // السائل الخلوي
-  g.fillStyle = '#2d0830';
-  g.fillRect(0, 0, W, H);
-
-  // جدار الخلية السفي (الأرضية المجهرية)
-  g.fillStyle = '#8e44ad';
-  g.fillRect(0, groundY(), W, H - groundY());
-
-  // غشاء غشائي خطي
-  g.strokeStyle = '#e84393';
-  g.lineWidth = 6;
-  g.beginPath();
-  g.moveTo(0, groundY());
-  for (let x = 0; x < W; x += 40) {
-    g.lineTo(x, groundY() + Math.sin((x + frameCount * 2) * 0.02) * 5);
-  }
-  g.lineTo(W, groundY());
-  g.stroke();
-
-  // العضيات في الخلفية (ميتوكندريا وريبوسومات)
-  g.fillStyle = 'rgba(232, 67, 147, 0.15)';
-  for (let i = 0; i < 5; i++) {
-    let bx = (i * 300 - (frameCount * 0.5) % 300 + W) % W;
-    g.beginPath();
-    g.ellipse(bx, H * 0.3 + (i * 40) % 100, 40, 20, Math.PI / 4, 0, Math.PI * 2);
-    g.fill();
-  }
-}
-
-// تحديث الحركة والفيزياء
-function update() {
-  if (!gameStarted || isPaused || isGameOver) return;
-
-  frameCount++;
-
-  // حركة اللاعب
-  player.vy += player.gravity;
-  player.y +=
+function sound
