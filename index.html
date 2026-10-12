@@ -7,125 +7,18 @@
 <title>رحلتك بعلم الأجنة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
-body, html {
-  width: 100%; height: 100%; overflow: hidden;
-  background: #0d0118; color: #fff;
-  font-family: 'Cairo', system-ui, sans-serif;
-}
-#game-container {
-  position: relative; width: 100vw; height: 100vh;
-  display: flex; justify-content: center; align-items: center;
-  background: radial-gradient(circle at center, #2a0845 0%, #0d0118 100%);
-}
-canvas { display: block; width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1; }
-
-/* الشاشات التفاعلية فوق اللعبة */
-.screen-overlay {
-  position: absolute; inset: 0; z-index: 9999;
-  background: rgba(13, 1, 24, 0.94);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 24px; text-align: center; padding: 25px;
-  pointer-events: auto !important;
-}
-
-.screen-overlay h1 {
-  font-size: 38px; font-weight: 900; color: #ffeaa7;
-  text-shadow: 0 0 20px rgba(255, 234, 167, 0.5), 3px 3px 0 #e84393;
-  line-height: 1.2;
-}
-.screen-overlay p {
-  font-size: 20px; color: #dfe6e9; max-width: 520px; line-height: 1.7;
-}
-
-/* الأزرار الكرتونية الحديثة */
-.btn-glow {
-  background: linear-gradient(135deg, #ff7675, #d63031);
-  border: 3px solid #fff; border-radius: 50px;
-  color: #fff; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 24px;
-  padding: 14px 48px; cursor: pointer;
-  box-shadow: 0 10px 25px rgba(214, 48, 49, 0.5);
-  transition: transform 0.1s;
-  pointer-events: auto !important;
-  position: relative; z-index: 10000;
-}
-.btn-glow:active { transform: scale(0.95); }
-
-.btn-green {
-  background: linear-gradient(135deg, #00b894, #006b54);
-  box-shadow: 0 10px 25px rgba(0, 184, 148, 0.5);
-}
-
-.chars-preview {
-  display: flex; gap: 25px; margin: 10px 0; align-items: center; justify-content: center;
-}
-.char-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  border-radius: 24px; padding: 15px;
-}
-.char-card canvas { position: relative; width: 120px; height: 130px; z-index: 2; }
-
-/* أزرار الواجهة أثناء اللعب */
-.game-ui {
-  position: absolute; top: 20px; left: 20px; right: 20px; z-index: 500;
-  display: flex; justify-content: space-between; align-items: center;
-  pointer-events: none;
-}
-.brand-title {
-  font-size: 24px; font-weight: 900; color: #ffeaa7;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-}
-.ui-btns { display: flex; gap: 12px; pointer-events: auto; }
-.icon-btn {
-  background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
-  border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 14px;
-  color: #fff; font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 16px;
-  padding: 8px 18px; cursor: pointer;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #0d0118; color: #fff;
+    font-family: 'Cairo', system-ui, sans-serif;
+  }
+  canvas { display: block; width: 100vw; height: 100vh; cursor: pointer; }
 </style>
 </head>
 <body>
 
-<div id="game-container">
-  <!-- الكانفاس الرئيسي -->
-  <canvas id="gameCanvas"></canvas>
-
-  <!-- أزرار الواجهة العليا -->
-  <div class="game-ui">
-    <div class="brand-title">رحلة علم الأجنة 🧬</div>
-    <div class="ui-btns">
-      <button class="icon-btn" onclick="togglePause(event)">إيقاف ⏸</button>
-      <button class="icon-btn" onclick="toggleMute(event)">الصوت: مفعل 🔊</button>
-    </div>
-  </div>
-
-  <!-- الشاشة 1: ابدأ رحلتك بعلم الأجنة -->
-  <div id="screenStart" class="screen-overlay">
-    <h1>ابدأ رحلتك بعلم الأجنة</h1>
-    <p>انغمس داخل العالم المجهري المدهش للخلايا الأجنة وشاهد المعجزات الخلوية عن قرب!</p>
-    <button class="btn-glow" onclick="handleStartClick(event)">ابدأ الرحلة 🚀</button>
-  </div>
-
-  <!-- الشاشة 2: شاشة التحذير -->
-  <div id="screenWarning" class="screen-overlay" style="display: none;">
-    <h1>تحذير من الفريق الطبي! ⚠️</h1>
-    <div class="chars-preview">
-      <div class="char-card"><canvas id="previewBoy" width="120" height="130"></canvas></div>
-      <div class="char-card"><canvas id="previewGirl" width="120" height="130"></canvas></div>
-    </div>
-    <p>انتبه أيها الباحث! المسار مليء بالفيروسات والأجسام الخلوية الدخيلة.<br>حافظ على طاقة الـ ATP واففز لتفادي المخاطر!</p>
-    <button class="btn-glow btn-green" onclick="handlePlayClick(event)">انطلق الآن! 🧬</button>
-  </div>
-
-  <!-- الشاشة 3: نهاية المحاولة -->
-  <div id="screenGameOver" class="screen-overlay" style="display: none;">
-    <h1>انتهت المحاولة!</h1>
-    <p id="scoreText" style="font-size: 26px; color: #ffeaa7; font-weight: 900;"></p>
-    <button class="btn-glow" onclick="handleRestartClick(event)">إعادة اللعب 🔄</button>
-  </div>
-</div>
+<canvas id="gameCanvas"></canvas>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
@@ -139,11 +32,34 @@ window.addEventListener('resize', () => {
   H = canvas.height = window.innerHeight;
 });
 
-// إدارة الصوت
-let mute = false;
+// متغيرات حالة اللعبة
+let gameState = 'START'; // 'START', 'WARNING', 'PLAYING', 'GAMEOVER'
+let score = 0, lives = 3, frame = 0, isPaused = false, isMuted = false;
 let audioCtx = null;
+
+const getGroundY = () => H * 0.76;
+
+// شخصية اللاعب
+const player = {
+  x: 120, y: 0, w: 60, h: 75,
+  vy: 0, gravity: 0.6, jumpPower: -13.5,
+  isGrounded: false
+};
+
+let obstacles = [];
+let collectibles = [];
+let bgParticles = [];
+
+for (let i = 0; i < 35; i++) {
+  bgParticles.push({
+    x: Math.random() * W, y: Math.random() * H,
+    r: Math.random() * 4 + 2, speed: Math.random() * 1.5 + 0.5,
+    opacity: Math.random() * 0.5 + 0.2
+  });
+}
+
 function playSound(freq, duration, type = 'sine') {
-  if (mute) return;
+  if (isMuted) return;
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     const osc = audioCtx.createOscillator();
@@ -157,37 +73,18 @@ function playSound(freq, duration, type = 'sine') {
   } catch(e){}
 }
 
-let gameState = 'START'; // START, WARNING, PLAYING, GAMEOVER
-let score = 0, lives = 3, frame = 0, isPaused = false;
-const getGroundY = () => H * 0.76;
-
-const player = {
-  x: 120, y: 0, w: 60, h: 75,
-  vy: 0, gravity: 0.6, jumpPower: -13.5,
-  isGrounded: false
-};
-
-let obstacles = [];
-let collectibles = [];
-let bgParticles = [];
-
-for (let i = 0; i < 30; i++) {
-  bgParticles.push({
-    x: Math.random() * W, y: Math.random() * H,
-    r: Math.random() * 4 + 2, speed: Math.random() * 1.5 + 0.5,
-    opacity: Math.random() * 0.5 + 0.2
-  });
-}
-
-// رسم الشخصيات الكرتونية النفاثة
-function drawCuteCharacter(c, x, y, isGirl = false, animTime = 0) {
+/* ========================================================
+   رسم الشخصيات الكرتونية فائقة الجودة (نفاثات وقبعات بيضاء)
+   ======================================================== */
+function drawCuteCharacter(c, x, y, isGirl = false, animTime = 0, scale = 1) {
   c.save();
   c.translate(x, y);
+  c.scale(scale, scale);
 
   let floatY = Math.sin(animTime * 0.08) * 4;
   c.translate(0, floatY);
 
-  // نيران النفاثة
+  // نيران النفاثة المتوهجة
   let flameSize = 10 + Math.random() * 8;
   let flameGrad = c.createLinearGradient(-16, 15, -16, 15 + flameSize);
   flameGrad.addColorStop(0, '#fdcb6e'); flameGrad.addColorStop(1, '#e17055');
@@ -196,18 +93,19 @@ function drawCuteCharacter(c, x, y, isGirl = false, animTime = 0) {
   c.moveTo(-22, 15); c.lineTo(-16, 15 + flameSize); c.lineTo(-10, 15);
   c.fill();
 
-  // النفاثة
+  // الحقيبة النفاثة
   c.fillStyle = '#636e72'; c.beginPath(); c.roundRect(-25, -12, 14, 28, 6); c.fill();
   c.fillStyle = '#00cec9'; c.beginPath(); c.arc(-18, -2, 3, 0, Math.PI*2); c.fill();
 
-  // الجسم
+  // جسم الشخصية الكرتوني
   c.fillStyle = isGirl ? '#fd79a8' : '#74b9ff';
   c.beginPath(); c.roundRect(-10, -10, 26, 28, 10); c.fill();
 
-  // الرأس
+  // الرأس الكرتوني اللطيف
   c.fillStyle = '#ffeaa7';
   c.beginPath(); c.arc(3, -22, 16, 0, Math.PI * 2); c.fill();
 
+  // شعر البنت
   if (isGirl) {
     c.fillStyle = '#e17055';
     c.beginPath(); c.arc(-5, -22, 17, Math.PI*0.5, Math.PI*1.8); c.fill();
@@ -221,6 +119,263 @@ function drawCuteCharacter(c, x, y, isGirl = false, animTime = 0) {
   c.fillStyle = '#ff7675';
   c.fillRect(1, -38, 4, 8); c.fillRect(-1, -36, 8, 4);
 
-  // العيون والابتسامة
+  // عيون كرتونية واسعة
   c.fillStyle = '#2d3436';
-  c.beginPath(); c.
+  c.beginPath(); c.arc(8, -22, 3.5, 0, Math.PI * 2); c.arc(15, -22, 3.5, 0, Math.PI * 2); c.fill();
+  c.fillStyle = '#ffffff';
+  c.beginPath(); c.arc(9, -23, 1.2, 0, Math.PI * 2); c.arc(16, -23, 1.2, 0, Math.PI * 2); c.fill();
+
+  // خدود وردية
+  c.fillStyle = 'rgba(255, 118, 117, 0.4)';
+  c.beginPath(); c.arc(6, -17, 3, 0, Math.PI * 2); c.arc(17, -17, 3, 0, Math.PI * 2); c.fill();
+
+  // ابتسامة
+  c.strokeStyle = '#2d3436'; c.lineWidth = 2; c.lineCap = 'round';
+  c.beginPath(); c.arc(11, -18, 4, 0.1, Math.PI - 0.1); c.stroke();
+
+  c.restore();
+}
+
+// رسم زر كرتوني داخل Canvas مع التأكد من إحداثياته
+function drawCanvasButton(x, y, w, h, text, bgColor, textColor='#fff') {
+  ctx.save();
+  ctx.fillStyle = bgColor;
+  ctx.beginPath(); ctx.roundRect(x - w/2, y - h/2, w, h, 25); ctx.fill();
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.stroke();
+
+  ctx.fillStyle = textColor;
+  ctx.font = '900 22px Cairo, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
+/* ========================================================
+   التقاط النقرات المباشرة على الشاشة واستجابة 100%
+   ======================================================== */
+canvas.addEventListener('pointerdown', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const clickY = e.clientY - rect.top;
+
+  if (gameState === 'START') {
+    // زر "ابدأ الرحلة"
+    if (Math.abs(clickX - W/2) < 140 && Math.abs(clickY - (H/2 + 100)) < 30) {
+      gameState = 'WARNING';
+      playSound(600, 0.1, 'sine');
+    }
+  } 
+  else if (gameState === 'WARNING') {
+    // زر "انطلق الآن!"
+    if (Math.abs(clickX - W/2) < 140 && Math.abs(clickY - (H/2 + 130)) < 30) {
+      startNewGame();
+      playSound(700, 0.15, 'sine');
+    }
+  } 
+  else if (gameState === 'PLAYING') {
+    // أزرار الواجهة العليا
+    if (clickY < 60) {
+      if (clickX > W - 110 && clickX < W - 10) {
+        isMuted = !isMuted;
+        return;
+      }
+      if (clickX > W - 220 && clickX < W - 120) {
+        isPaused = !isPaused;
+        return;
+      }
+    }
+    // القفز أثناء اللعب
+    if (player.isGrounded && !isPaused) {
+      player.vy = player.jumpPower; player.isGrounded = false;
+      playSound(520, 0.12, 'sine');
+    }
+  } 
+  else if (gameState === 'GAMEOVER') {
+    // زر "إعادة اللعب"
+    if (Math.abs(clickX - W/2) < 140 && Math.abs(clickY - (H/2 + 100)) < 30) {
+      startNewGame();
+      playSound(600, 0.1, 'sine');
+    }
+  }
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') {
+    if (gameState === 'PLAYING' && player.isGrounded && !isPaused) {
+      player.vy = player.jumpPower; player.isGrounded = false;
+      playSound(520, 0.12, 'sine');
+    }
+  }
+});
+
+function startNewGame() {
+  score = 0; lives = 3; gameState = 'PLAYING'; isPaused = false;
+  player.y = getGroundY() - player.h; player.vy = 0;
+  obstacles = []; collectibles = [];
+  obstacles.push({ x: W + 400, y: getGroundY() - 50, w: 50, h: 50 });
+}
+
+/* ========================================================
+   تحديث الحركة والفيزياء
+   ======================================================== */
+function update() {
+  frame++;
+  if (gameState !== 'PLAYING' || isPaused) return;
+
+  player.vy += player.gravity;
+  player.y += player.vy;
+  if (player.y + player.h >= getGroundY()) {
+    player.y = getGroundY() - player.h;
+    player.vy = 0; player.isGrounded = true;
+  }
+
+  if (frame % 150 === 0) {
+    obstacles.push({ x: W + 100, y: getGroundY() - 50, w: 50, h: 50 });
+  }
+  if (frame % 200 === 0) {
+    collectibles.push({ x: W + 100, y: getGroundY() - 100 - Math.random() * 60, r: 16 });
+  }
+
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    let o = obstacles[i]; o.x -= 6;
+    if (player.x < o.x + o.w && player.x + player.w > o.x &&
+        player.y < o.y + o.h && player.y + player.h > o.y) {
+      lives--; playSound(140, 0.25, 'sawtooth');
+      obstacles.splice(i, 1);
+      if (lives <= 0) gameState = 'GAMEOVER';
+      continue;
+    }
+    if (o.x + o.w < 0) { obstacles.splice(i, 1); score += 10; }
+  }
+
+  for (let i = collectibles.length - 1; i >= 0; i--) {
+    let c = collectibles[i]; c.x -= 6;
+    let dist = Math.hypot((player.x + player.w/2) - c.x, (player.y + player.h/2) - c.y);
+    if (dist < player.w/2 + c.r) {
+      score += 25; playSound(750, 0.15, 'sine');
+      collectibles.splice(i, 1); continue;
+    }
+    if (c.x + c.r < 0) collectibles.splice(i, 1);
+  }
+
+  bgParticles.forEach(p => {
+    p.x -= p.speed;
+    if (p.x < 0) p.x = W;
+  });
+}
+
+/* ========================================================
+   الرسم والواجهات (Canvas Pure Rendering)
+   ======================================================== */
+function render() {
+  ctx.clearRect(0, 0, W, H);
+
+  // 1. خلفية الخلية المجهرية
+  let bgGrad = ctx.createRadialGradient(W/2, H/2, 50, W/2, H/2, W);
+  bgGrad.addColorStop(0, '#3a0d5c'); bgGrad.addColorStop(0.7, '#18032b'); bgGrad.addColorStop(1, '#090012');
+  ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
+
+  bgParticles.forEach(p => {
+    ctx.fillStyle = `rgba(255, 118, 117, ${p.opacity})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // 2. غشاء الخلية السفلي
+  let cellWallGrad = ctx.createLinearGradient(0, getGroundY(), 0, H);
+  cellWallGrad.addColorStop(0, '#a29bfe'); cellWallGrad.addColorStop(0.2, '#6c5ce7'); cellWallGrad.addColorStop(1, '#2d3436');
+  ctx.fillStyle = cellWallGrad; ctx.fillRect(0, getGroundY(), W, H - getGroundY());
+
+  ctx.strokeStyle = '#fd79a8'; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(0, getGroundY());
+  for (let x = 0; x <= W; x += 40) {
+    ctx.lineTo(x, getGroundY() + Math.sin((x + frame * 4) * 0.02) * 6);
+  }
+  ctx.stroke();
+
+  // --- شاشة 1: ابدأ الرحلة ---
+  if (gameState === 'START') {
+    ctx.fillStyle = 'rgba(13, 1, 24, 0.85)'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#ffeaa7'; ctx.font = '900 36px Cairo, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('ابدأ رحلتك بعلم الأجنة', W/2, H/2 - 80);
+
+    ctx.fillStyle = '#dfe6e9'; ctx.font = '700 18px Cairo, sans-serif';
+    ctx.fillText('انغمس داخل العالم المجهري المدهش للخلايا الأجنة!', W/2, H/2 - 20);
+
+    drawCanvasButton(W/2, H/2 + 100, 260, 60, 'ابدأ الرحلة 🚀', '#d63031');
+  }
+  // --- شاشة 2: التحذير مع الشخصيتين الطائرتين ---
+  else if (gameState === 'WARNING') {
+    ctx.fillStyle = 'rgba(13, 1, 24, 0.88)'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#ffeaa7'; ctx.font = '900 32px Cairo, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('تحذير من الفريق الطبي! ⚠️', W/2, H/2 - 140);
+
+    // رسم الولد والبنت جنب بعض يطيران بالنفاثات
+    drawCuteCharacter(ctx, W/2 - 80, H/2 - 30, false, frame, 1.2);
+    drawCuteCharacter(ctx, W/2 + 80, H/2 - 30, true, frame, 1.2);
+
+    ctx.fillStyle = '#dfe6e9'; ctx.font = '700 17px Cairo, sans-serif';
+    ctx.fillText('انتبه! المسار مليء بالفيروسات والعقبات الخلوية.', W/2, H/2 + 40);
+    ctx.fillText('حافظ على طاقة الـ ATP واففز لتفادي المخاطر!', W/2, H/2 + 65);
+
+    drawCanvasButton(W/2, H/2 + 130, 260, 60, 'انطلق الآن! 🧬', '#00b894');
+  }
+  // --- مرحلة اللعب أو نهايتها ---
+  else if (gameState === 'PLAYING' || gameState === 'GAMEOVER') {
+    collectibles.forEach(c => {
+      ctx.fillStyle = '#ffeaa7'; ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#fdcb6e'; ctx.lineWidth = 3; ctx.stroke();
+    });
+
+    obstacles.forEach(o => {
+      ctx.fillStyle = '#d63031'; ctx.beginPath();
+      ctx.arc(o.x + o.w/2, o.y + o.h/2, o.w/2, 0, Math.PI * 2); ctx.fill();
+
+      ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+        let sx = (o.x + o.w/2) + Math.cos(a) * (o.w/2);
+        let sy = (o.y + o.h/2) + Math.sin(a) * (o.h/2);
+        let ex = (o.x + o.w/2) + Math.cos(a) * (o.w/2 + 8);
+        let ey = (o.y + o.h/2) + Math.sin(a) * (o.h/2 + 8);
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+      }
+    });
+
+    drawCuteCharacter(ctx, player.x + player.w/2, player.y + 35, false, frame);
+
+    // واجهة القلوب والنقاط
+    ctx.fillStyle = '#ffeaa7'; ctx.font = '900 22px Cairo, sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('النقاط: ' + score, W - 250, 35);
+
+    for (let i = 0; i < lives; i++) {
+      ctx.fillStyle = '#ff7675';
+      let hx = 30 + i * 35, hy = 30;
+      ctx.beginPath(); ctx.arc(hx - 5, hy, 6, 0, Math.PI * 2); ctx.arc(hx + 5, hy, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(hx - 11, hy + 2); ctx.lineTo(hx, hy + 13); ctx.lineTo(hx + 11, hy + 2); ctx.fill();
+    }
+
+    // أزرار تحكم عليا علوية رسم
+    drawCanvasButton(W - 60, 30, 90, 35, isMuted ? 'مكتوم' : 'صوت', '#6c5ce7');
+    drawCanvasButton(W - 170, 30, 90, 35, isPaused ? 'استئناف' : 'إيقاف', '#e17055');
+
+    // --- شاشة نهاية المحاولة ---
+    if (gameState === 'GAMEOVER') {
+      ctx.fillStyle = 'rgba(13, 1, 24, 0.88)'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#ffeaa7'; ctx.font = '900 36px Cairo, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('انتهت المحاولة!', W/2, H/2 - 50);
+      ctx.fillStyle = '#ffffff'; ctx.font = '700 22px Cairo, sans-serif';
+      ctx.fillText('النقاط المسجلة: ' + score, W/2, H/2 + 10);
+
+      drawCanvasButton(W/2, H/2 + 100, 260, 60, 'إعادة اللعب 🔄', '#d63031');
+    }
+  }
+}
+
+function gameLoop() {
+  update();
+  render();
+  requestAnimationFrame(gameLoop);
+}
+gameLoop();
+</script>
+</body>
+</html>
