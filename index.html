@@ -2,411 +2,336 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>رحلتك بعلم الأجنة - Cinematic Flight & Reward</title>
-<!-- Three.js للرسوم ثلاثية الأبعاد واللقطات السينمائية -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>رحلة الحياة - سينمائي</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
 <style>
+:root {
+  --bg: #0a051b;
+  --primary: #ff4d8d;
+  --accent: #ffd6e7;
+  --gold: #ffe066;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-body, html { width: 100%; height: 100%; overflow: hidden; background: #080112; font-family: 'Cairo', sans-serif; }
-#canvas-container { width: 100vw; height: 100vh; position: absolute; inset: 0; z-index: 1; }
+html, body {
+  height: 100%; width: 100%;
+  background: var(--bg);
+  color: #fff;
+  font-family: 'Cairo', sans-serif;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.game-container {
+  position: relative;
+  width: min(100vw, 960px);
+  height: min(100vh, 540px);
+  aspect-ratio: 16/9;
+  box-shadow: 0 0 50px rgba(255, 77, 141, 0.3);
+  border: 3px solid #2a1b5e;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+canvas {
+  width: 100%; height: 100%;
+  display: block;
+}
+/* UI Overlays */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 5, 27, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  gap: 15px;
+  text-align: center;
+  padding: 20px;
+}
+.title {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--gold);
+  text-shadow: 0 0 15px rgba(255, 224, 102, 0.6), 2px 2px 0 #ff4d8d;
+}
+.subtitle { font-size: 18px; color: var(--accent); max-width: 80%; }
+input#nin {
+  width: 280px;
+  padding: 10px;
+  font: 700 18px 'Cairo', sans-serif;
+  text-align: center;
+  background: #1b1340;
+  color: #fff;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  outline: none;
+}
+button.btn {
+  padding: 10px 28px;
+  font: 900 18px 'Cairo', sans-serif;
+  color: #0b0720;
+  background: linear-gradient(135deg, var(--gold), #ffaa00);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 224, 102, 0.4);
+  transition: transform 0.1s, filter 0.2s;
+}
+button.btn:hover { filter: brightness(1.1); transform: scale(1.03); }
+button.btn:active { transform: scale(0.97); }
 
-/* واجهة سينمائية حديثة شفافة */
-.cinematic-ui {
-  position: absolute; inset: 0; z-index: 10; pointer-events: none;
-  display: flex; flex-direction: column; justify-content: space-between; padding: 30px;
+/* Cinema Cutscene Overlay */
+#dialogue-box {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 600px;
+  background: rgba(15, 10, 35, 0.9);
+  border: 2px solid var(--primary);
+  border-radius: 10px;
+  padding: 12px 20px;
+  display: none;
+  z-index: 5;
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
 }
-.cinematic-card {
-  pointer-events: auto; background: rgba(20, 5, 35, 0.88); border: 2px solid rgba(255, 234, 167, 0.4);
-  backdrop-filter: blur(12px); border-radius: 24px; padding: 25px 35px;
-  max-width: 540px; margin: auto; text-align: center; color: #fff;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-  animation: floatUI 3s ease-in-out infinite alternate;
-}
-@keyframes floatUI { from { transform: translateY(0px); } to { transform: translateY(-8px); } }
+.speaker { font-weight: 900; color: var(--gold); margin-bottom: 4px; font-size: 16px; }
+.dialogue-text { font-size: 15px; color: #fff; line-height: 1.4; }
 
-.title-large {
-  font-size: 34px; font-weight: 900; color: #ffeaa7;
-  text-shadow: 0 0 20px rgba(255, 234, 167, 0.6), 3px 3px 0 #e84393; margin-bottom: 12px;
+/* HUD */
+#hud {
+  position: absolute;
+  top: 15px; left: 20px; right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 4;
+  pointer-events: none;
+  font-weight: 900;
+  text-shadow: 1px 1px 3px #000;
 }
-.text-desc { font-size: 18px; color: #dfe6e9; line-height: 1.6; margin-bottom: 20px; }
-
-.btn-cinematic {
-  background: linear-gradient(135deg, #ff7675, #d63031);
-  border: 3px solid #fff; border-radius: 50px;
-  color: #fff; font-size: 20px; font-weight: 900; font-family: 'Cairo', sans-serif;
-  padding: 12px 36px; cursor: pointer; display: inline-block;
-  box-shadow: 0 10px 25px rgba(214, 48, 49, 0.5);
-  transition: all 0.2s; margin: 5px;
-}
-.btn-cinematic:hover { transform: scale(1.06); box-shadow: 0 15px 35px rgba(214, 48, 49, 0.8); }
-.btn-green { background: linear-gradient(135deg, #00b894, #006b54); box-shadow: 0 10px 25px rgba(0, 184, 148, 0.5); }
-.btn-gold { background: linear-gradient(135deg, #fdcb6e, #e17055); box-shadow: 0 10px 25px rgba(253, 203, 110, 0.5); }
-
-/* العداد العلوي */
-.hud-top {
-  display: flex; justify-content: space-between; align-items: center; width: 100%;
-  font-size: 22px; font-weight: 900; color: #ffeaa7; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-}
-
-/* شاشة الفيلم القصير وخانة التخطي */
-.movie-overlay {
-  position: absolute; inset: 0; z-index: 100;
-  background: #000; display: flex; flex-direction: column;
-  align-items: center; justify-content: space-between; padding: 40px 20px;
-}
-.movie-screen {
-  width: 100%; max-width: 800px; height: 60vh; background: radial-gradient(circle, #3a0d5c 0%, #000 100%);
-  border: 3px solid #ff7675; border-radius: 20px; box-shadow: 0 0 40px rgba(255, 118, 117, 0.4);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  position: relative; overflow: hidden;
-}
-.skip-container { pointer-events: auto; z-index: 101; }
-.skip-btn {
-  background: rgba(255, 255, 255, 0.2); border: 2px solid #fff; color: #fff;
-  border-radius: 30px; padding: 10px 30px; font-size: 20px; font-weight: 900;
-  cursor: pointer; backdrop-filter: blur(5px); transition: 0.2s;
-}
-.skip-btn:hover { background: #ff3366; }
-
-/* شاشة الجائزة والوسام */
-.trophy-icon { font-size: 80px; margin: 10px 0; animation: pulseTrophy 1.5s infinite alternate; }
-@keyframes pulseTrophy { from { transform: scale(1); } to { transform: scale(1.15); } }
+.hud-item { background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); }
 </style>
 </head>
 <body>
 
-<div id="canvas-container"></div>
+<div class="game-container">
+  <canvas id="gc" width="960" height="540"></canvas>
 
-<div class="cinematic-ui">
-  <div class="hud-top" id="hud" style="display: none;">
-    <div>رحلة علم الأجنة 🧬</div>
-    <div id="scoreHUD">النقاط: 0</div>
-    <div id="livesHUD">القلوب: ❤️❤️❤️</div>
+  <!-- HUD -->
+  <div id="hud" style="display:none;">
+    <div class="hud-item" id="stage-txt">المرحلة 1: الانطلاق في قناة فالوب</div>
+    <div class="hud-item" id="score-txt">المسافة: 0m</div>
   </div>
 
-  <!-- الشاشة 1: اللقطة السينمائية الأولى -->
-  <div class="cinematic-card" id="cardStart">
-    <div class="title-large">ابدأ رحلتك بعلم الأجنة</div>
-    <div class="text-desc">استعد للتحليق داخل السائل الجنيني المجهري وشاهد تكوّن الخلية وحركتها عن قرب!</div>
-    <button class="btn-cinematic" onclick="triggerScene2()">ابدأ الرحلة 🚀</button>
+  <!-- Dialogue Box -->
+  <div id="dialogue-box">
+    <div class="speaker" id="d-speaker">مرشد الرحلة</div>
+    <div class="dialogue-text" id="d-text">...</div>
   </div>
 
-  <!-- الشاشة 2: التحذير السينمائي بالشخصيات الطائرة -->
-  <div class="cinematic-card" id="cardWarning" style="display: none;">
-    <div class="title-large">تحذير الفريق الطبي! ⚠️</div>
-    <div class="text-desc">
-      شاهد الشخصيات الكرتونية بالطيران الحر مع الحقائب النفاثة والقبعات البيضاء!<br>
-      <b>طريقة الطيران:</b> حرّك الماوس أو إصبعك على الشاشة لتوجيه الطيران وتفادي الفيروسات!
-    </div>
-    <button class="btn-cinematic btn-green" onclick="start3DFlight()">انطلق بالطيران 🧬</button>
+  <!-- Start Screen -->
+  <div id="start-screen" class="overlay">
+    <div class="title">رحلة الأجنة السينمائية</div>
+    <div class="subtitle">انطلق بسرعة داخل قناة فالوب المتعرجة، تجنب القنابل والوحوش، وصل إلى وجهتك لتحقق المعجزة!</div>
+    <input id="nin" maxlength="20" placeholder="أدخل اسمك الكريم" value="بطل الرحلة">
+    <button class="btn" onclick="startGame()">ابدأ الرحلة السينمائية</button>
   </div>
 
-  <!-- الشاشة 3: الخسارة / اكتمال المحاولة -->
-  <div class="cinematic-card" id="cardGameOver" style="display: none;">
-    <div class="title-large">انتهت الرحلة! 🎬</div>
-    <div class="text-desc" id="finalScore"></div>
-    <button class="btn-cinematic btn-gold" onclick="playEndMovie()">مشاهدة الفيلم القصير 🎬</button>
-    <button class="btn-cinematic" onclick="showRewardScreen()">تخطي للجائزة مباشرة 🏆</button>
-  </div>
-</div>
-
-<!-- 4. شاشة الفيلم القصير (End Movie Cutscene) -->
-<div class="movie-overlay" id="movieOverlay" style="display: none;">
-  <div style="color: #ffeaa7; font-size: 26px; font-weight: 900;">🎬 فيلم قصير: معجزة الخلية والأجنة</div>
-  
-  <div class="movie-screen" id="movieCanvasBox">
-    <!-- أنيميشن السينما داخل الفيلم -->
-    <div id="movieAnimText" style="color: #fff; font-size: 22px; font-weight: 900; text-align: center; padding: 20px;">
-      "في أعماق الخلية الجنينية، تبدأ رحلة الحياة بكل دقة وإبدع..."
-    </div>
+  <!-- Game Over Screen -->
+  <div id="fail-screen" class="overlay" style="display:none;">
+    <div class="title" style="color:#ff4d4d;">لم تكتمل الرحلة!</div>
+    <div class="subtitle">تعرضت الخلية للتدمير قبل الوصول للمكان الصحيح. حاول مجدداً!</div>
+    <button class="btn" onclick="restartGame()">إعادة المحاولة</button>
   </div>
 
-  <!-- خانة زر التخطي أسفل الفيلم -->
-  <div class="skip-container">
-    <button class="skip-btn" onclick="skipMovieToReward()">تخطي الفيلم ⏭</button>
-  </div>
-</div>
-
-<!-- 5. شاشة الجائزة والوسام (Reward Screen) -->
-<div class="cinematic-ui" id="rewardOverlay" style="display: none;">
-  <div class="cinematic-card">
-    <div class="trophy-icon">🏆</div>
-    <div class="title-large" style="color: #fdcb6e;">مبارك! وسام الباحث الطبي</div>
-    <div class="text-desc">
-      لقد أكملت استكشاف الخلية الجنينية بنجاح وحصلت على وسام الشرف!<br>
-      <b id="rewardScoreText" style="color: #ffeaa7; font-size: 22px;"></b>
-    </div>
-    <button class="btn-cinematic" onclick="restart3DFlight()">إعادة اللعب والطيران 🔄</button>
+  <!-- Certificate / Ending Screen -->
+  <div id="end-screen" class="overlay" style="display:none;">
+    <div class="title">تهانينا! لقد اكتملت المعجزة 🎉</div>
+    <div class="subtitle" id="cert-desc">وصلت الخلية بنجاح وانولدت إلى هذا العالم!</div>
+    <button class="btn" onclick="location.reload()">لعب مرة أخرى</button>
   </div>
 </div>
 
 <script>
-let scene, camera, renderer;
-let playerGroup, boyMesh, girlMesh;
-let tunnelMesh, particlesMesh;
-let obstacles3D = [], items3D = [];
-let gameState = 'INTRO';
-let score = 0, lives = 3, speed = 0.8;
-let targetPos = { x: 0, y: 0 };
-let movieTimer = null;
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
 
-function init3D() {
-  const container = document.getElementById('canvas-container');
-  scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x120224, 0.015);
+// Game States
+const STATE_MENU = 0, STATE_INTRO = 1, STATE_PLAYING = 2, STATE_TRANSITION = 3, STATE_ENDING = 4, STATE_GAMEOVER = 5;
+let gameState = STATE_MENU;
 
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(0, 0, 15);
+let playerName = "";
+let score = 0;
+let stage = 1; // 1: Cell travel, 2: Rapid Division, 3: Final Approach
+let gameTime = 0;
+let transitionTimer = 0;
+let transitionText = "";
 
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  container.appendChild(renderer.domElement);
+// Player Cell Object (Cinematic Tunnel Camera View)
+const player = {
+  x: 480,
+  y: 360,
+  z: 0,
+  radius: 18,
+  targetX: 480,
+  targetY: 360,
+  speed: 8,
+  alive: true
+};
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-  scene.add(ambientLight);
+// Curve & Tunnel Effect
+let tunnelOffset = 0;
+let tunnelCurve = 0;
 
-  const dirLight = new THREE.DirectionalLight(0xff7675, 1.5);
-  dirLight.position.set(10, 20, 10);
-  scene.add(dirLight);
+// Pixel Guides (Intro)
+const guides = [
+  { name: 'سارة (Pixel)', color: '#ff73c5', x: -100, y: 200, targetX: 280, targetY: 220, text: 'انتبه! قناة فالوب متعرجة مليئة بالمخاطر القاتلة!' },
+  { name: 'عمر (Pixel)', color: '#52b2ff', x: 1060, y: 200, targetX: 680, targetY: 220, text: 'استخدم الحقيبة النفاثة للتحرك بسرعة! يجب أن تصل للمكان الصحيح وتعيش!' }
+];
+let introStep = 0;
 
-  const tunnelGeo = new THREE.CylinderGeometry(15, 15, 300, 32, 1, true);
-  const tunnelMat = new THREE.MeshStandardMaterial({
-    color: 0x3a0d5c, side: THREE.BackSide, wireframe: true
-  });
-  tunnelMesh = new THREE.Mesh(tunnelGeo, tunnelMat);
-  tunnelMesh.rotation.x = Math.PI / 2;
-  scene.add(tunnelMesh);
+// Obstacles & Effects
+let obstacles = [];
+let speedLines = [];
+let particles = [];
 
-  const partGeo = new THREE.BufferGeometry();
-  const count = 500;
-  const posArr = new Float32Array(count * 3);
-  for(let i=0; i<count*3; i+=3) {
-    posArr[i] = (Math.random() - 0.5) * 30;
-    posArr[i+1] = (Math.random() - 0.5) * 30;
-    posArr[i+2] = (Math.random() - 0.5) * 200;
-  }
-  partGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
-  const partMat = new THREE.PointsMaterial({ size: 0.3, color: 0xfd79a8 });
-  particlesMesh = new THREE.Points(partGeo, partMat);
-  scene.add(particlesMesh);
+// Ending Cutscene Variables
+let endCutsceneStep = 0;
+let endTimer = 0;
 
-  create3DCharacters();
-
-  window.addEventListener('resize', onWindowResize);
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('touchmove', onTouchMove);
+// Sound FX Generator (Web Audio API)
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playBeep(freq, duration, type='square') {
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e){}
 }
 
-function create3DCharacters() {
-  playerGroup = new THREE.Group();
+// Input Handling
+let mouseX = 480, mouseY = 360;
+canvas.addEventListener('pointermove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  mouseX = (e.clientX - rect.left) * scaleX;
+  mouseY = (e.clientY - rect.top) * scaleY;
+});
 
-  const bodyGeo = new THREE.BoxGeometry(1.2, 1.6, 0.8);
-  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x74b9ff });
-  boyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-
-  const headGeo = new THREE.SphereGeometry(0.8, 16, 16);
-  const headMat = new THREE.MeshStandardMaterial({ color: 0xffeaa7 });
-  const head = new THREE.Mesh(headGeo, headMat);
-  head.position.y = 1.3;
-  boyMesh.add(head);
-
-  const capGeo = new THREE.CylinderGeometry(0.85, 0.85, 0.3, 16);
-  const capMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-  const cap = new THREE.Mesh(capGeo, capMat);
-  cap.position.y = 1.8;
-  boyMesh.add(cap);
-
-  const jetGeo = new THREE.BoxGeometry(0.8, 1.2, 0.5);
-  const jetMat = new THREE.MeshStandardMaterial({ color: 0x636e72 });
-  const jetpack = new THREE.Mesh(jetGeo, jetMat);
-  jetpack.position.set(0, 0, -0.6);
-
-  const flameGeo = new THREE.ConeGeometry(0.4, 1.2, 8);
-  const flameMat = new THREE.MeshBasicMaterial({ color: 0xfdcb6e });
-  const flame = new THREE.Mesh(flameGeo, flameMat);
-  flame.rotation.x = Math.PI;
-  flame.position.y = -1;
-  jetpack.add(flame);
-
-  boyMesh.add(jetpack);
-
-  girlMesh = boyMesh.clone();
-  girlMesh.children[0].material = new THREE.MeshStandardMaterial({ color: 0xfd79a8 });
-  girlMesh.position.x = 2.5;
-
-  playerGroup.add(boyMesh);
-  scene.add(playerGroup);
-  playerGroup.position.z = 5;
-}
-
-function onMouseMove(e) {
-  if (gameState !== 'FLYING') return;
-  targetPos.x = ((e.clientX / window.innerWidth) * 2 - 1) * 6;
-  targetPos.y = (-(e.clientY / window.innerHeight) * 2 + 1) * 4;
-}
-
-function onTouchMove(e) {
-  if (gameState !== 'FLYING' || !e.touches[0]) return;
-  targetPos.x = ((e.touches[0].clientX / window.innerWidth) * 2 - 1) * 6;
-  targetPos.y = (-(e.touches[0].clientY / window.innerHeight) * 2 + 1) * 4;
-}
-
-function triggerScene2() {
-  document.getElementById('cardStart').style.display = 'none';
-  document.getElementById('cardWarning').style.display = 'block';
-  gameState = 'WARNING';
-  camera.position.set(1.2, 0.5, 9);
-  playerGroup.add(girlMesh);
-}
-
-function start3DFlight() {
-  document.getElementById('cardWarning').style.display = 'none';
-  document.getElementById('cardGameOver').style.display = 'none';
-  document.getElementById('rewardOverlay').style.display = 'none';
+function startGame() {
+  playerName = document.getElementById('nin').value || 'بطل الرحلة';
+  document.getElementById('start-screen').style.display = 'none';
   document.getElementById('hud').style.display = 'flex';
-  gameState = 'FLYING';
-  score = 0; lives = 3;
-  camera.position.set(0, 1, 12);
-  playerGroup.remove(girlMesh);
+  gameState = STATE_INTRO;
+  introStep = 0;
+  showDialogue(guides[0].name, guides[0].text);
+  playBeep(440, 0.2);
 }
 
-function restart3DFlight() {
-  document.getElementById('rewardOverlay').style.display = 'none';
-  start3DFlight();
+function restartGame() {
+  document.getElementById('fail-screen').style.display = 'none';
+  player.x = 480; player.y = 360; player.alive = true;
+  score = 0; stage = 1; obstacles = [];
+  gameState = STATE_PLAYING;
 }
 
-/* ========================================================
-   مشغل الفيلم القصير وزر التخطي وشاشة الجائزة
-   ======================================================== */
-function playEndMovie() {
-  document.getElementById('cardGameOver').style.display = 'none';
-  document.getElementById('movieOverlay').style.display = 'flex';
-
-  const texts = [
-    "في أعماق الخلية الجنينية، تبدأ رحلة الحياة بكل دقة وإبداع...",
-    "تتضافر جزيئات الـ ATP لتغذية الخلية والانقسام المتوازن...",
-    "بفضل جهود الفريق الطبي، تم تخطي العقبات وتأمين نمو الجنين بسلام! ❤️"
-  ];
-  let idx = 0;
-  const animBox = document.getElementById('movieAnimText');
-  
-  movieTimer = setInterval(() => {
-    idx++;
-    if (idx < texts.length) {
-      animBox.innerText = texts[idx];
-    } else {
-      clearInterval(movieTimer);
-      showRewardScreen();
-    }
-  }, 3500);
+function showDialogue(speaker, text) {
+  const box = document.getElementById('dialogue-box');
+  document.getElementById('d-speaker').innerText = speaker;
+  document.getElementById('d-text').innerText = text;
+  box.style.display = 'block';
 }
 
-function skipMovieToReward() {
-  if (movieTimer) clearInterval(movieTimer);
-  showRewardScreen();
+function hideDialogue() {
+  document.getElementById('dialogue-box').style.display = 'none';
 }
 
-function showRewardScreen() {
-  document.getElementById('cardGameOver').style.display = 'none';
-  document.getElementById('movieOverlay').style.display = 'none';
-  document.getElementById('rewardOverlay').style.display = 'flex';
-  document.getElementById('rewardScoreText').innerText = 'نقاط الاستكشاف: ' + Math.floor(score);
+// Spawn Speed Lines for Motion Effect
+for(let i=0; i<40; i++) {
+  speedLines.push({
+    x: Math.random() * 960,
+    y: Math.random() * 540,
+    z: Math.random() * 1000,
+    length: Math.random() * 80 + 20
+  });
 }
 
-function spawnObstaclesAndItems() {
-  if (Math.random() < 0.04) {
-    const geo = new THREE.DodecahedronGeometry(1.2, 1);
-    const mat = new THREE.MeshStandardMaterial({ color: 0xd63031, roughness: 0.3 });
-    const obs = new THREE.Mesh(geo, mat);
-    obs.position.set((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 8, -100);
-    scene.add(obs);
-    obstacles3D.push(obs);
-  }
+// Main Game Loop
+function update() {
+  gameTime++;
 
-  if (Math.random() < 0.03) {
-    const geo = new THREE.OctahedronGeometry(0.8, 0);
-    const mat = new THREE.MeshBasicMaterial({ color: 0xffeaa7, wireframe: true });
-    const item = new THREE.Mesh(geo, mat);
-    item.position.set((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 8, -100);
-    scene.add(item);
-    items3D.push(item);
-  }
-}
+  if (gameState === STATE_INTRO) {
+    // Animate Pixel Guides
+    guides[0].x += (guides[0].targetX - guides[0].x) * 0.08;
+    guides[1].x += (guides[1].targetX - guides[1].x) * 0.08;
 
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-function animate() {
-  requestAnimationFrame(animate);
-
-  tunnelMesh.rotation.z += 0.003;
-  particlesMesh.rotation.z -= 0.002;
-
-  if (gameState === 'INTRO') {
-    camera.position.x = Math.sin(Date.now() * 0.001) * 3;
-    camera.position.y = Math.cos(Date.now() * 0.001) * 2;
-    camera.lookAt(0, 0, 0);
-  }
-
-  if (gameState === 'FLYING') {
-    score += 0.2;
-    document.getElementById('scoreHUD').innerText = 'النقاط: ' + Math.floor(score);
-
-    playerGroup.position.x += (targetPos.x - playerGroup.position.x) * 0.1;
-    playerGroup.position.y += (targetPos.y - playerGroup.position.y) * 0.1;
-
-    playerGroup.rotation.z = -(targetPos.x - playerGroup.position.x) * 0.2;
-    playerGroup.rotation.x = (targetPos.y - playerGroup.position.y) * 0.15;
-
-    spawnObstaclesAndItems();
-
-    for (let i = obstacles3D.length - 1; i >= 0; i--) {
-      let o = obstacles3D[i];
-      o.position.z += speed;
-      o.rotation.x += 0.02; o.rotation.y += 0.02;
-
-      if (o.position.distanceTo(playerGroup.position) < 1.8) {
-        scene.remove(o); obstacles3D.splice(i, 1);
-        lives--;
-        let hearts = '❤️'.repeat(Math.max(0, lives));
-        document.getElementById('livesHUD').innerText = 'القلوب: ' + hearts;
-
-        if (lives <= 0) {
-          gameState = 'GAMEOVER';
-          document.getElementById('finalScore').innerText = 'النقاط التي جمعتها: ' + Math.floor(score);
-          document.getElementById('cardGameOver').style.display = 'block';
-          document.getElementById('hud').style.display = 'none';
-        }
-        continue;
+    if (gameTime % 180 === 0) {
+      introStep++;
+      if (introStep === 1) {
+        showDialogue(guides[1].name, guides[1].text);
+        playBeep(587, 0.2);
+      } else if (introStep >= 2) {
+        hideDialogue();
+        gameState = STATE_PLAYING;
       }
-      if (o.position.z > 15) { scene.remove(o); obstacles3D.splice(i, 1); }
-    }
-
-    for (let i = items3D.length - 1; i >= 0; i--) {
-      let it = items3D[i];
-      it.position.z += speed;
-      it.rotation.y += 0.05;
-
-      if (it.position.distanceTo(playerGroup.position) < 1.8) {
-        scene.remove(it); items3D.splice(i, 1);
-        score += 30;
-        continue;
-      }
-      if (it.position.z > 15) { scene.remove(it); items3D.splice(i, 1); }
     }
   }
 
-  renderer.render(scene, camera);
-}
+  if (gameState === STATE_PLAYING) {
+    score += 1;
+    document.getElementById('score-txt').innerText = `المسافة: ${Math.floor(score/10)}m`;
 
-init3D();
-animate();
-</script>
-</body>
-</html>
+    // Tunnel Curve Motion
+    tunnelOffset += 0.05;
+    tunnelCurve = Math.sin(tunnelOffset * 0.5) * 150;
+
+    // Follow Mouse / Touch smoothly
+    player.targetX = mouseX;
+    player.targetY = mouseY;
+    player.x += (player.targetX - player.x) * 0.15;
+    player.y += (player.targetY - player.y) * 0.15;
+
+    // Keep Player inside tunnel bounds
+    const tunnelCenterX = 480 + Math.sin(tunnelOffset) * 80;
+    const tunnelCenterY = 270;
+    const distFromCenter = Math.hypot(player.x - tunnelCenterX, player.y - tunnelCenterY);
+    if (distFromCenter > 220) {
+      const angle = Math.atan2(player.y - tunnelCenterY, player.x - tunnelCenterX);
+      player.x = tunnelCenterX + Math.cos(angle) * 220;
+      player.y = tunnelCenterY + Math.sin(angle) * 220;
+    }
+
+    // Spawn Obstacles (Bombs & Monsters)
+    if (gameTime % Math.max(15, 40 - stage * 8) === 0) {
+      const type = Math.random() > 0.4 ? 'bomb' : 'monster';
+      const angle = Math.random() * Math.PI * 2;
+      const rad = Math.random() * 180;
+      obstacles.push({
+        x: tunnelCenterX + Math.cos(angle) * rad,
+        y: tunnelCenterY + Math.sin(angle) * rad,
+        z: 1000, // Distance away
+        type: type,
+        radius: type === 'bomb' ? 20 : 28,
+        rot: 0
+      });
+    }
+
+    // Update Obstacles
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+      let ob = obstacles[i];
+      ob.z -= 18 + stage * 4
